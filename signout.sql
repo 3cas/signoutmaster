@@ -1,0 +1,8 @@
+CREATE TABLE schools (
+    id INTEGER PRIMARY KEY NOT NULL,
+    username TEXT NOT NULL,
+    name TEXT NOT NULL,
+    time INTEGER NOT NULL
+);
+
+CREATE TABLE 
