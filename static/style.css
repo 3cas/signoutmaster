@@ -1,0 +1,115 @@
+:root {
+    font-family: 'Inter', sans-serif;
+}
+
+@supports (font-variation-settings: normal) {
+    :root {
+        font-family: 'Inter var', sans-serif;
+    }
+}
+
+:root {
+    --accent: lightskyblue;
+}
+
+body * {
+    font-family: "Inter";
+}
+
+div {
+    display: flex;
+}
+
+form {
+    display: inline-block;
+}
+
+input[type="text"] {
+    width: 15ch;
+}
+
+a,
+.accent {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.bordered th,
+.bordered td {
+    text-align: center;
+    padding: 2px;
+    border: 1px solid black;
+    border-collapse: true;
+}
+
+table.bordered {
+    border: 1px solid black;
+    border-collapse: true;
+}
+
+.row {
+    flex-direction: row;
+}
+
+.col {
+    flex-direction: column;
+}
+
+.center {
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.ct,
+.spacer * {
+    text-align: center;
+    width: 100%;
+}
+
+.title {
+    color: var(--accent);
+    font-size: 30pt;
+}
+
+.spacer {
+    width: 100px;
+}
+
+.niceborder {
+    padding: 20px;
+    border-color: var(--accent);
+    border-style: dashed;
+    border-width: 5px;
+    border-radius: 10px;
+}
+
+#otherval {
+    opacity: 0.5;
+    pointer-events: none;
+    width: 10ch;
+}
+
+#otherbtn:checked~#otherval {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#dismiss {
+    opacity: .5;
+    pointer-events: none;
+}
+
+/* #option-return:checked ~ #dismiss {
+    opacity: 0.5;
+    pointer-events: none;
+} */
+
+#option-nurse:checked~#dismiss {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* #option-water:checked ~ #dismiss {
+    opacity: 0.5;
+    pointer-events: none;
+} */

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <?php
+        date_default_timezone_set("America/New_York");
+        $time_now = time();
+        $conn = new mysqli("localhost", "signout", "7q/LC*)BbicN7165", "signout");
+    ?>
+    <div class="center ct">
+        <div class="spacer">
+            <a href="signout.php" class="accent">go back</a>
+        </div>
+        <p class="title">Teacher View</p>
+        <div class="spacer">
+            <?php
+                $friendly_time = date("g:i a", $time_now);
+                echo "<span class='accent'>$friendly_time</span>";
+
+                $result_out = $conn->query("SELECT * FROM signouts WHERE time_in IS NULL ORDER BY time_out DESC;");
+                $result_log = $conn->query("SELECT * FROM signouts WHERE time_in IS NOT NULL ORDER BY time_in DESC;");
+            ?>
+        </div>
+    </div>
+    <div class="center">
+        <div class="col niceborder">
+            <h2>Currently signed out</h2>
+            <?php
+                if ($result_out) {
+                    if ($result_out->num_rows > 0) {
+                        echo "
+                            <table class='bordered'>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Destination</th>
+                                    <th>Time out</th>
+                                    <th>Time since</th>
+                                    <th>Manual sign-in</th>
+                                </tr>
+                        ";
+                        while ($row = $result_out->fetch_assoc()) {
+                            $student = $row["student"];
+                            $destination = $row["destination"];
+                            $time_out = date("g:i a", $row["time_out"]);
+                            $mins_since = date("i", $time_now - $row["time_out"]);
+                            if (intval($mins_since) > 9) {
+                                $mins_color = "red";
+                            } else {
+                                $mins_color = "black";
+                            }
+        
+                            echo "
+                                <tr>
+                                    <td>$student</td>
+                                    <td>$destination</td>
+                                    <td>$time_out</td>
+                                    <td style='color: $mins_color;'>$mins_since minutes</td>
+                                    <td><a href='signout.php?id=$student&dest=return&redir=1'>Return</a></td>
+                                </tr>
+                            ";
+                        }
+                        echo "</table>";
+                    } else {
+                        echo "<p>No one is currently signed out.</p>";
+                    }
+                } else {
+                    echo "<p>There was an SQL error.</p>";
+                }
+            ?>
+            <h2>Past signouts</h2>
+            <?php
+                if ($result_log) {
+                    if ($result_log->num_rows > 0) {
+                        echo "
+                            <table class='bordered'>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Destination</th>
+                                    <th>Time out</th>
+                                    <th>Time in</th>
+                                    <th>Total time</th>
+                                </tr>
+                        ";
+                        while ($row = $result_log->fetch_assoc()) {
+                            $student = $row["student"];
+                            $destination = $row["destination"];
+                            $time_out = date("m/d/y g:i a", $row["time_out"]);
+                            $time_in = date("m/d/y g:i a", $row["time_in"]);
+                            $total_mins = date("i", $row["time_in"] - $row["time_out"]);
+                            if (intval($total_mins) > 9) {
+                                $mins_color = "red";
+                            } else {
+                                $mins_color = "black";
+                            }
+        
+                            echo "
+                                <tr>
+                                    <td>$student</td>
+                                    <td>$destination</td>
+                                    <td>$time_out</td>
+                                    <td>$time_in</td>
+                                    <td style='color: $mins_color;'>$total_mins minutes</td>
+                                </tr>
+                            ";
+                        }
+                        echo "</table>";
+                    } else {
+                        echo "<p>No past signouts have occurred.</p>";
+                    }
+                } else {
+                    echo "<p>There was an SQL error.</p>";
+                }
+            ?>
+        </div>
+    </div>
+    <div class="center">
+        <p><a href="signout.php" class="center">back to student view</a></p>
+    </div>
+</body>
+</html>

@@ -14,9 +14,6 @@ def inst(*targets):
 def util(*targets):
     return path("utility", *targets)
 
-with open(inst("id.txt"), "r") as f:
-    iid = f.read()
-
 class BetterBlueprint(Blueprint):
     def __init__(self, name, import_name = None):
         if not import_name:

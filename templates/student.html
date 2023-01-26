@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+<body>
+    <?php
+        date_default_timezone_set("America/New_York");
+        $time_now = time();
+
+        if (isset($_GET["id"])) {
+            $student_id = $_GET["id"];
+            
+            if (isset($_GET["dest"])) {
+                $destination = $_GET["dest"];
+                $conn = new mysqli("localhost", "signout", "7q/LC*)BbicN7165", "signout");
+
+                $sql = "SELECT * FROM signouts WHERE student = $student_id AND time_in IS NULL;";
+                $check_result = $conn->query($sql);
+
+                if ($check_result) {
+                    if ($check_result->num_rows > 0) {
+                        $already_signed_out = TRUE;
+                    } else {
+                        $already_signed_out = FALSE;
+                    }
+                } else {
+                    $flash = array("$student_id: Checking error - $error", "red");
+                }
+
+                if ($destination == "return") {
+                    if ($already_signed_out) {
+                        $sql = "UPDATE signouts SET time_in = $time_now WHERE student = $student_id AND time_in IS NULL;";
+
+                        if ($conn->query($sql) === TRUE) {
+                            $flash = array("$student_id: You have been signed back in.", "green");
+                        } else {
+                            $error = $conn->error;
+                            $flash = array("$student_id: Sign in error - $error", "red");
+                        }
+                    } else {
+                        $flash = array("$student_id: You are not signed out!", "red");
+                    }
+                } else {
+                    if ($destination == "other" and isset($_GET["other"])) {
+                        $destination = $_GET["other"];
+                    }
+
+                    if ($already_signed_out) {
+                        $flash = array("$student_id: You are already signed out!", "red");
+                    } else {
+                        if ($destination == "bathroom") {
+                            $sql = "SELECT * FROM signouts WHERE destination = 'bathroom';";
+                            
+                            $check_result = $conn->query($sql);
+
+                            if ($check_result) {
+                                if ($check_result->num_rows > 0) {
+                                    $bathroom_allow = FALSE;
+                                } else {
+                                    $bathroom_allow = TRUE;
+                                }
+                            } else {
+                                $flash = array("$student_id: Checking error - $error", "red");
+                            }
+                        }
+
+                        if (!isset($bathroom_allow) || $bathroom_allow) {
+                            $sql = "INSERT INTO signouts (student, destination, time_out) VALUES ($student_id, '$destination', $time_now);";
+                    
+                            if ($conn->query($sql) === TRUE) {
+                                $flash = array("$student_id: You have been signed out to \"$destination\"", "green");
+                            } else {
+                                $error = $conn->error;
+                                $flash = array("$student_id: Signout error - $error", "red");
+                            }
+                        } else {
+                            $flash = array("$student_id: Someone  else is already in the bathroom!", "red");
+                        }                    
+                    }
+                }
+            } else {
+                $flash = array("You need to select a destination.", "red");
+            }
+        }
+
+        if (isset($_GET["redir"]) and $_GET["redir"]) {
+            header("Location: teacher.php");
+            exit();
+        }
+    ?>
+    <div class="center ct">
+        <div class="spacer"></div>
+        <h2 class="title">Signout</h2>
+        <div class="spacer">
+            <?php
+                $friendly_time = date("g:i a", $time_now);
+                echo "<span class='accent'>$friendly_time</span>";
+            ?>
+        </div>
+    </div>
+    <div class="center">
+        <div class="col niceborder">
+            <form action="signout.php" autocomplete="off">
+                <table>
+                    <tr>
+                        <td><label for="id">ID:</label></td>
+                        <td><input type="text" name="id" minlength="4" maxlength="8" required></td>
+                    </tr>
+                    <tr>
+                        <td><label for="dest">Destination:</label></td>
+                        <td>
+                            <input type="radio" name="dest" id="option-return" value="return" checked="checked">
+                            <label for="return">Sign back in</label>
+                        </td>
+                    </tr>
+                    <?php
+                        $options = array("Bathroom", "Water", "Nurse", "Attendance", "Source", "Guidance", "VPO");
+                        foreach ($options as $option) {
+                            $option_lower = strtolower($option);
+
+                            echo "
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <input type='radio' name='dest' id='option-$option_lower' value='$option_lower'>
+                                        <label for='$option_lower'>$option</label>
+                                    </td>
+                                </tr>
+                            ";
+                        }
+                    ?>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="radio" name="dest" id="otherbtn" value="other">
+                            <input type="text" name="other" id="otherval" placeholder="Other" maxlength="50">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="dismiss">Going home?</label></td>
+                        <td>
+                            <input type="checkbox" name="dismiss" id="dismiss">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><input type="submit"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <div class="center">
+        <div class="col ct">
+            <?php
+                if (isset($flash)) {
+                    $message = $flash[0];
+                    $color = $flash[1];
+                    echo "<p style='color: $color;'>$message</p>";
+                }
+            ?>
+            <br>
+            <a href="teacher.php">go to teacher view</a>
+        </div>
+    </div>
+</body>
+</html>

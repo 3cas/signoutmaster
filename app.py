@@ -14,5 +14,7 @@ app.config["SECRET_KEY"] = os.urandom(12).hex()
 app.register_blueprint(signout)
 
 if __name__ == "__main__":
+    import setup
+
     app.config["SERVER_NAME"] == "localhost:5000"
     app.run()
