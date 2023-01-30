@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, g
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 
@@ -28,13 +28,12 @@ def register_handler():
     )
     con.commit()
     
-    return redirect(url_for("signout.login", fillname=username, message=f"Account {username} successfully created. You can now login."))
+    flash("Account {username} successfully created. You can now login.")
+    return redirect(url_for("signout.login"))
 
 @signout.route("/login")
 def login():
-    message = request.args.get("message")
-    fillname = request.args.get("fillname")
-    return render_template("login.html", fillname=fillname, message=message)
+    return render_template("login.html")
 
 @signout.route("/login/handler", methods=["POST"])
 def login_hander():
@@ -51,24 +50,25 @@ def login_hander():
             session["user_id"] = user["id"]
             return redirect(url_for("signout.panel"))
 
-        else:
-            return redirect(url_for("signout.login", message="Incorrect password!"))
+        flash("Incorrect password!")
 
-    else:
-        return redirect(url_for("signout.login", message="That account doesn't exist!"))
+    flash("That account doesn't exist!")
+
+    return redirect(url_for("signout.login"))
 
 @signout.route("/panel")
 def panel():
-    message = request.args.get("message")
-    return render_template("panel.html", message=message)
+    return render_template("panel.html")
 
 @signout.route("/panel/settings")
 def settings():
-    return "settings page"
+    return render_template("settings.html")
 
 @signout.route("/panel/settings/apply")
 def apply_settings():
-    return "apply settings"
+    # ...
+    flash("Applied changes!")
+    return redirect(url_for("signout.settings"))
 
 @signout.route("/panel/monitor")
 def monitor():
@@ -78,6 +78,10 @@ def monitor():
 def student():
     return "student panel"
 
+@signout.route("/panel/sign")
+def sign():
+    return "signing out or in"
+
 @signout.route("/share/<public_id>")
-def student_public():
+def student_public(public_id):
     return "student panel public share link"
