@@ -3,7 +3,20 @@
 {% block title %}Register{% endblock %}
 
 {% block body %}
-    <div class="center">
-        <p>Hello world</p>
+    <div class="wrapper">
+        <div class="main">
+            <div class="login-box">
+                <h2>Create Account</h2>
+                <form method="post" action="{{ url_for('signout.register_handler') }}">
+                    <input type="text" name="username" placeholder="username">
+                    <br>
+                    <input type="password" name="password" placeholder="password">
+                    <br>
+                    <input type="password" name="confirm_password" placeholder="confirm password">
+                    <br>
+                    <input type="submit" value="Register">
+                </form>
+            </div>
+        </div>
     </div>
 {% endblock %}
