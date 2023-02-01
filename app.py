@@ -8,7 +8,7 @@ from signout import signout
 DOMAIN = "localhost" 
 
 app = Flask(__name__, subdomain_matching=True)
-app.config["SERVER_NAME"] = f"{DOMAIN}:80"
+app.config["SERVER_NAME"] = f"{DOMAIN}:8000"
 app.config["SECRET_KEY"] = os.urandom(12).hex()
 
 app.register_blueprint(signout)
@@ -16,5 +16,5 @@ app.register_blueprint(signout)
 if __name__ == "__main__":
     import setup
 
-    app.config["SERVER_NAME"] == "localhost:5000"
+    app.config["SERVER_NAME"] == "localhost:8000"
     app.run()
