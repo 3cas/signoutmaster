@@ -60,8 +60,7 @@ table.bordered {
     align-items: center;
 }
 
-.ct,
-.spacer * {
+.ct, .spacer * {
     text-align: center;
     width: 100%;
 }
