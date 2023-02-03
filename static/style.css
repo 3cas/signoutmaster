@@ -39,6 +39,7 @@ form * {
 .main {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 .login-box {

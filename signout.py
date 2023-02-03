@@ -30,7 +30,7 @@ def check_user():
     return True
 
 def no_user():
-    flash("error:You must be signed in!")
+    flash("You must be signed in!", "error")
     return redirect(url_for("signout.login"))
 
 # if not check_user(): return no_user()
@@ -46,7 +46,15 @@ def after_request(response):
 
 @signout.route("/")
 def home():
-    return render_template("home.html")
+    if check_user():
+        username = cur.execute(
+            "SELECT username FROM users WHERE id = ?",
+            (session["user_id"],)
+        ).fetchone()[0]
+    else:
+        username = None
+
+    return render_template("home.html", username=username)
 
 @signout.route("/register")
 def register():
@@ -56,19 +64,27 @@ def register():
 def register_handler():
     username = request.form.get("username")
     password = request.form.get("password")
+    confirm_password = request.form.get("confirm_password")
 
-    try:
-        cur.execute(
-            "INSERT INTO users (username, password_hash, config) VALUES (?, ?, ?)",
-            (username, generate_password_hash(password), "{}")
-        )
-    except sqlite3.IntegrityError:
-        return "already exists"
+    if confirm_password != password:
+        flash("Passwords do not match!", "error")
+        return redirect(url_for("signout.register"))
+
     else:
-        con.commit()
-    
-    flash("success:Account {username} successfully created. You can now login.")
-    return redirect(url_for("signout.login"))
+        try:
+            cur.execute(
+                "INSERT INTO users (username, password_hash, config) VALUES (?, ?, ?)",
+                (username, generate_password_hash(password), "{}")
+            )
+
+        except sqlite3.IntegrityError:
+            flash("An account with that username already exists.", "error")
+            return redirect(url_for("signout.register"))
+
+        else:
+            con.commit()
+            flash(f"Account {username} successfully created. You can now login.", "success")
+            return redirect(url_for("signout.login"))
 
 @signout.route("/login")
 def login():
@@ -87,20 +103,21 @@ def login_handler():
         if check_password_hash(user[1], password):
             session.clear()
             session["user_id"] = user[0]
-            flash(f"success:Successfully signed in as {username}!")
+            flash(f"Successfully signed in as {username}!", "success")
             return redirect(url_for("signout.panel"))
 
         else:
-            flash("error:Incorrect password!")
+            flash("Incorrect password!", "error")
+            return redirect(url_for("signout.login"))
 
     else:
-        flash("error:That account doesn't exist!")
-
-    return redirect(url_for("signout.login"))
+        flash("That account doesn't exist!", "error")
+        return redirect(url_for("signout.login"))
 
 @signout.route("/logout")
 def logout():
     session.clear()
+    flash("You have been signed out!", "success")
     return redirect(url_for("signout.home"))
 
 @signout.route("/panel")
@@ -124,7 +141,7 @@ def settings():
 def apply_settings():
     if not check_user(): return no_user()
     # ...
-    flash("success:Applied changes!")
+    flash("Applied changes!", "success")
     return redirect(url_for("signout.settings"))
 
 @signout.route("/panel/monitor")

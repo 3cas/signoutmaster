@@ -3,14 +3,15 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
+    {{ flashes() }}
     <div class="login-box">
         <h2>Create Account</h2>
         <form method="post" action="{{ url_for('signout.register_handler') }}">
-            <input type="text" name="username" placeholder="username">
+            <input type="text" name="username" placeholder="username" required minlength="3" maxlength="16">
             <br>
-            <input type="password" name="password" placeholder="password">
+            <input type="password" name="password" placeholder="password" required minlength="8" maxlength="64">
             <br>
-            <input type="password" name="confirm_password" placeholder="confirm password">
+            <input type="password" name="confirm_password" placeholder="confirm password" required minlength="8" maxlength="64">
             <br>
             <input type="submit" value="Register">
         </form>
