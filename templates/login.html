@@ -1,0 +1,17 @@
+{% extends "center.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    {{ flashes() }}
+    <div class="login-box">
+        <h2>Login</h2>
+        <form method="post" action="{{ url_for('signout.login_handler') }}">
+            <input type="text" name="username" placeholder="username">
+            <br>
+            <input type="password" name="password" placeholder="password">
+            <br>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+{% endblock %}

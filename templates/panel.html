@@ -1,0 +1,8 @@
+{% extends "center.html" %}
+
+{% block title %}Panel{% endblock %}
+
+{% block content %}
+    {{ flashes() }}
+    <p>Logged in as {{ username }}.</p>
+{% endblock %}

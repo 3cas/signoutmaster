@@ -1,3 +1,19 @@
+{% macro flashes() %}
+    {% for message in get_flashed_messages() %}
+        {% set split_m = message|split(":") %}
+        {% if split_m|length == 2 %}
+            {% set class = split_m[0] %}
+            {% set text = split_m[1] %}
+        {% else %}
+            {% set class = "error" %}
+            {% set text = split_m[0] %}
+        {% endif %}
+        <div class="flash {{ class }}">
+            <span>{{ text }}</span>
+        </div>
+    {% endfor %}
+{% endmacro %}
+
 <!DOCTYPE html>
 <html>
 <head>
