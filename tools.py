@@ -1,4 +1,5 @@
-from flask import render_template, url_for, Blueprint
+from flask import render_template, url_for, Blueprint, g
+import sqlite3
 import os
 
 # This file includes some utilities and shortcuts which are mainly useful on my main server, used in this repo for consistency.
@@ -29,3 +30,8 @@ class BetterBlueprint(Blueprint):
 
     def render_error(self, code, message):
         return self.render("error.html", code=code, message=message), code
+    
+def get_db(db_name):
+    if not hasattr(g, "db"):
+        g.db = sqlite3.connect(inst(db_name))
+    return g.db

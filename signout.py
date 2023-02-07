@@ -1,12 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 from datetime import datetime
 
 import tools
-
-con = sqlite3.connect(tools.inst("signout.db"), check_same_thread=False)
-cur = con.cursor()
 
 signout = Blueprint("signout", __name__)
 
@@ -18,7 +15,7 @@ def check_user():
     if ("user_id" not in session) or (not session["user_id"]):
         return False
     
-    user = cur.execute(
+    user = g.cur.execute(
         "SELECT username FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
@@ -30,10 +27,15 @@ def check_user():
     return True
 
 def no_user():
-    flash("You must be signed in!", "error")
+    flash("You must be logged in!", "error")
     return redirect(url_for("signout.login"))
 
 # if not check_user(): return no_user()
+
+@signout.before_request
+def before_request():
+    g.db = tools.get_db("signout.db")
+    g.cur = g.db.cursor()
 
 @signout.app_template_filter("split")
 def my_split(text: str, splitter: str):
@@ -45,9 +47,10 @@ def after_request(response):
     return response
 
 @signout.route("/")
+@signout.route("/home")
 def home():
     if check_user():
-        username = cur.execute(
+        username = g.cur.execute(
             "SELECT username FROM users WHERE id = ?",
             (session["user_id"],)
         ).fetchone()[0]
@@ -68,11 +71,11 @@ def register_handler():
 
     if confirm_password != password:
         flash("Passwords do not match!", "error")
-        return redirect(url_for("signout.register"))
+        return redirect(url_for("signout.register", fill=username))
 
     else:
         try:
-            cur.execute(
+            g.cur.execute(
                 "INSERT INTO users (username, password_hash, config) VALUES (?, ?, ?)",
                 (username, generate_password_hash(password), "{}")
             )
@@ -82,7 +85,6 @@ def register_handler():
             return redirect(url_for("signout.register"))
 
         else:
-            con.commit()
             flash(f"Account {username} successfully created. You can now login.", "success")
             return redirect(url_for("signout.login"))
 
@@ -95,7 +97,7 @@ def login_handler():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    user = cur.execute(
+    user = g.cur.execute(
         "SELECT id, password_hash FROM users WHERE username = ?", (username,)
     ).fetchone()
 
@@ -103,7 +105,7 @@ def login_handler():
         if check_password_hash(user[1], password):
             session.clear()
             session["user_id"] = user[0]
-            flash(f"Successfully signed in as {username}!", "success")
+            flash(f"Successfully logged in as {username}!", "success")
             return redirect(url_for("signout.panel"))
 
         else:
@@ -117,14 +119,14 @@ def login_handler():
 @signout.route("/logout")
 def logout():
     session.clear()
-    flash("You have been signed out!", "success")
+    flash("You have been logged out!", "success")
     return redirect(url_for("signout.home"))
 
 @signout.route("/panel")
 def panel():
     if not check_user(): return no_user()
 
-    username = cur.execute(
+    username = g.cur.execute(
         "SELECT username FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()[0]
@@ -165,3 +167,10 @@ def sign():
 @signout.route("/share/<public_id>")
 def student_public(public_id):
     return "student panel public share link"
+
+@signout.after_request
+def after_request(response):
+    if hasattr(g, "db"):
+        g.db.commit()
+        g.db.close()
+    return response

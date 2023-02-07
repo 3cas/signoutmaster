@@ -29,6 +29,15 @@ form * {
     margin: 2px;
 }
 
+noscript div {
+    background-color: orangered;
+    align-items: center;
+}
+
+noscript span {
+    color: wheat;
+}
+
 .wrapper {
     display: flex;
     height: 100%;
@@ -46,7 +55,8 @@ form * {
     background-color: var(--accent);
     height: min-content;
     padding: 10px;
-    width: 250px;
+    margin: 10px;
+    width: 500px;
 }
 
 .fillheight {
@@ -62,7 +72,7 @@ form * {
 
 .error {
     border-color: red;
-    background-color: lightcoral;
+    background-color: pink;
     color: red;
 }
 

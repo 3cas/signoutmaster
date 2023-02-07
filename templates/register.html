@@ -6,6 +6,7 @@
     {{ flashes() }}
     <div class="login-box">
         <h2>Create Account</h2>
+        <p>Sign up as a school administrator. Please enter a username which represents your school.</p>
         <form method="post" action="{{ url_for('signout.register_handler') }}">
             <input type="text" name="username" placeholder="username" required minlength="3" maxlength="16">
             <br>
