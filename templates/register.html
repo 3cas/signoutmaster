@@ -8,7 +8,11 @@
         <h2>Create Account</h2>
         <p>Sign up as a school administrator. Please enter a username which represents your school.</p>
         <form method="post" action="{{ url_for('signout.register_handler') }}">
+            <input type="text" name="email" placeholder="email address" required minlength="6" maxlength="64">
+            <br>
             <input type="text" name="username" placeholder="username" required minlength="3" maxlength="16">
+            <br>
+            <input type="text" name="schoolname" placeholder="school name" required minlength="3" maxlength="64">
             <br>
             <input type="password" name="password" placeholder="password" required minlength="8" maxlength="64">
             <br>

@@ -126,12 +126,22 @@ def logout():
 def panel():
     if not check_user(): return no_user()
 
-    username = g.cur.execute(
-        "SELECT username FROM users WHERE id = ?",
+    user = g.cur.execute(
+        "SELECT username, config FROM users WHERE id = ?",
         (session["user_id"],)
-    ).fetchone()[0]
+    ).fetchone()
 
-    return render_template("panel.html", username=username)
+    username = user[0]
+    try:
+        config = dict(user[1])
+    except:
+        config = {}
+
+    return render_template("panel.html", username=username, config=config)
+
+@signout.route("/panel/onboarding")
+def onboarding():
+    return render_template("onboarding.html")
 
 @signout.route("/panel/settings")
 def settings():

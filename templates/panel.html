@@ -5,4 +5,9 @@
 {% block content %}
     {{ flashes() }}
     <p>Logged in as {{ username }}.</p>
+    {% if not config %}
+        <p>Thank you for creating your account! In order to access the panel, you must setup your account via <a href="{{ url_for('signout.onboarding') }}"> onboarding process.</a></p>
+    {% else %}the
+        <p>Options coming soon</p>
+    {% endif %}
 {% endblock %}
