@@ -75,7 +75,7 @@ def register_handler():
 
     for char in email:
         if char not in ALLOWED_EMAIL:
-            flash("Email contains invalid characters", "error")
+            flash("Email contains invalid characters")
             return redirect(url_for("signout.register"))
 
     for char in username:

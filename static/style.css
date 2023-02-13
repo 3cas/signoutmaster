@@ -82,6 +82,12 @@ noscript span {
     color: green;
 }
 
+.message {
+    border-color: dodgerblue;
+    background-color: paleturquoise;
+    color: dodgerblue;
+}
+
 .hidden {
     display: none;
 }
