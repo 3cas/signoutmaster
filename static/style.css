@@ -86,9 +86,6 @@ noscript span {
     display: none;
 }
 
-#check-match {
-    width: 16px;
-    height: 16px;
-    vertical-align: middle;
+/* #check-match {
     background-color: transparent;
-}
+} */

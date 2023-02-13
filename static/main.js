@@ -1,3 +1,6 @@
+const ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
+const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890_-@+~."
+
 var flashes = []
 
 function flash(message, category) {
@@ -12,7 +15,57 @@ function flash(message, category) {
     flashes_div.append(flash_div)
 }
 
-function password_check() {
+function check_email() {
+    let check = document.getElementById("check-email")
+    let submit = document.getElementById("submit")
+    let email_box = document.getElementById("email")
+    
+    let errors = 0
+    for (let char in email_box.value) {
+        char = char.toLowerCase()
+        console.log("debug: char in email")
+        if (!ALLOWED_EMAIL.includes(char)) {
+            errors ++
+            console.log(errors)
+        }
+    }
+
+    if (errors > 0) {
+        check.innerHTML = "invalid format"
+        check.classList = "error"
+        submit.disabled = true
+    } else {
+        check.innerHTML = ""
+        submit.disabled = false
+    }
+}
+
+function check_username() {
+    let check = document.getElementById("check-username")
+    let submit = document.getElementById("submit")
+    let username_box = document.getElementById("username")
+
+    let errors = 0
+    for (let char in username_box.value) {
+        char = char.toLowerCase()
+        console.log("debug: char in username")
+        if (!ALLOWED_USERNAME.includes(char)) {
+            errors++
+            console.log(errors)
+        }
+    }
+
+    if (errors > 0) {
+        check.innerHTML = "invalid format"
+        check.classList = "error"
+        submit.disabled = true
+    } else {
+        check.innerHTML = ""
+        submit.disabled = false
+    }
+}
+
+function check_password() {
     let check = document.getElementById("check-match")
     let submit = document.getElementById("submit")
     let password_box = document.getElementById("password")

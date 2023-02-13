@@ -9,6 +9,7 @@ import setup
 signout = Blueprint("signout", __name__)
 
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
+ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890_-@+~."
 
 def now(): return int(datetime.timestamp(datetime.now()))
 
@@ -66,11 +67,16 @@ def register():
 
 @signout.route("/register/handler", methods=["POST"])
 def register_handler():
-    email = request.form.get("email")
+    email = request.form.get("email").lower()
     schoolname = request.form.get("schoolname")
     username = request.form.get("username").lower()
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
+
+    for char in email:
+        if char not in ALLOWED_EMAIL:
+            flash("Email contains invalid characters")
+            return redirect(url_for("signout.register"))
 
     for char in username:
         if char not in ALLOWED_USERNAME:
