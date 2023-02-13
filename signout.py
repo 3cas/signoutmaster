@@ -67,13 +67,18 @@ def register():
 def register_handler():
     email = request.form.get("email")
     schoolname = request.form.get("schoolname")
-    username = request.form.get("username")
+    username = request.form.get("username").lower()
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
+    for char in username:
+        if char not in ALLOWED_USERNAME:
+            flash("Username can only be a-z, 0-9, - and _")
+            return redirect(url_for("signout.register"))
+
     if confirm_password != password:
         flash("Passwords do not match!", "error")
-        return redirect(url_for("signout.register"), code=307)
+        return redirect(url_for("signout.register"))
 
     else:
         try:
@@ -96,7 +101,7 @@ def login():
 
 @signout.route("/login/handler", methods=["POST"])
 def login_handler():
-    username = request.form.get("username")
+    username = request.form.get("username").lower()
     password = request.form.get("password")
 
     user = g.cur.execute(
