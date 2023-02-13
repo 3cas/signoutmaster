@@ -65,23 +65,25 @@ def register():
 
 @signout.route("/register/handler", methods=["POST"])
 def register_handler():
+    email = request.form.get("email")
+    schoolname = request.form.get("schoolname")
     username = request.form.get("username")
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
     if confirm_password != password:
         flash("Passwords do not match!", "error")
-        return redirect(url_for("signout.register", fill=username))
+        return redirect(url_for("signout.register"), code=307)
 
     else:
         try:
             g.cur.execute(
-                "INSERT INTO users (username, password_hash, config) VALUES (?, ?, ?)",
-                (username, generate_password_hash(password), "{}")
+                "INSERT INTO users (email, schoolname, username, password_hash) VALUES (?, ?, ?, ?)",
+                (email, schoolname, username, generate_password_hash(password))
             )
 
         except sqlite3.IntegrityError:
-            flash("An account with that username already exists.", "error")
+            flash("An account with that username, school name, or email already exists.", "error")
             return redirect(url_for("signout.register"))
 
         else:

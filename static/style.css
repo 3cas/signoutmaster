@@ -81,3 +81,14 @@ noscript span {
     background-color: lightgreen;
     color: green;
 }
+
+.hidden {
+    display: none;
+}
+
+#check-match {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    background-color: transparent;
+}

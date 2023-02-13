@@ -10,15 +10,16 @@
         <form method="post" action="{{ url_for('signout.register_handler') }}">
             <input type="text" name="email" placeholder="email address" required minlength="6" maxlength="64">
             <br>
-            <input type="text" name="username" placeholder="username" required minlength="3" maxlength="16">
-            <br>
             <input type="text" name="schoolname" placeholder="school name" required minlength="3" maxlength="64">
             <br>
-            <input type="password" name="password" placeholder="password" required minlength="8" maxlength="64">
+            <input type="text" name="username" placeholder="username" required minlength="3" maxlength="16">
             <br>
-            <input type="password" name="confirm_password" placeholder="confirm password" required minlength="8" maxlength="64">
+            <input type="password" name="password" id="password" placeholder="password" required minlength="8" maxlength="64" onkeyup="password_check();">
             <br>
-            <input type="submit" value="Register">
+            <input type="password" name="confirm_password" id="password-confirm" placeholder="confirm password" required minlength="8" maxlength="64" onkeyup="password_check();">
+            <span id="check-match"></span>
+            <br>
+            <input type="submit" id="submit" value="Register">
         </form>
     </div>
     <a href="{{ url_for('signout.login') }}">log in instead</a>
