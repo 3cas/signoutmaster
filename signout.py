@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 
 import tools
+import setup
 
 signout = Blueprint("signout", __name__)
 
