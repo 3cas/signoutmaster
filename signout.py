@@ -192,6 +192,27 @@ def sign():
 def student_public(public_id):
     return "student panel public share link"
 
+@signout.route("/check")
+def check_available():
+    field = request.args.get("field")
+    value = request.args.get("value")
+
+    if not (field or value):
+        return "not enough arguments"
+    
+    if field not in ["email", "schoolname", "username"]:
+        return "invalid field"
+
+    result = g.cur.execute(
+        f"SELECT id FROM users WHERE {field} = ?",
+        (value,)
+    )
+
+    if result:
+        return "taken"
+    else:
+        return "free"
+
 @signout.after_request
 def after_request(response):
     if hasattr(g, "db"):

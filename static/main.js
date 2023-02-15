@@ -1,5 +1,5 @@
 const ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
-const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890_-@+~."
+const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 var flashes = []
 
@@ -18,20 +18,28 @@ function flash(message, category) {
 function check_email() {
     let check = document.getElementById("check-email")
     let submit = document.getElementById("submit")
-    let email_box = document.getElementById("email")
-    
-    let errors = 0
-    for (let char in email_box.value) {
-        char = char.toLowerCase()
-        console.log("debug: char in email")
+    let email = document.getElementById("email").value
+
+    let fail = null
+    for (let char_ind in email) {
+        char = email[char_ind].toLowerCase()
         if (!ALLOWED_EMAIL.includes(char)) {
-            errors ++
-            console.log(errors)
+            fail = "invalid character(s)"
         }
     }
 
-    if (errors > 0) {
-        check.innerHTML = "invalid format"
+    if (
+        email.indexOf("@") > email.lastIndexOf(".") - 2 ||  // last . appears before @ or missing .
+        email.indexOf("@") == -1 ||     // missing @
+        email[0] == "@" ||              // @ is first character
+        email.slice(-1) == "." ||       // . is first character 
+        email.split("@").length > 2     // more than one @
+    ) {
+        fail = "invalid format"
+    }
+
+    if (fail) {
+        check.innerHTML = fail
         check.classList = "error"
         submit.disabled = true
     } else {
@@ -45,18 +53,16 @@ function check_username() {
     let submit = document.getElementById("submit")
     let username_box = document.getElementById("username")
 
-    let errors = 0
-    for (let char in username_box.value) {
-        char = char.toLowerCase()
-        console.log("debug: char in username")
+    let fail = false
+    for (let char_ind in username_box.value) {
+        char = username_box.value[char_ind].toLowerCase()
         if (!ALLOWED_USERNAME.includes(char)) {
-            errors++
-            console.log(errors)
+            fail = true
         }
     }
 
-    if (errors > 0) {
-        check.innerHTML = "invalid format"
+    if (fail) {
+        check.innerHTML = "invalid character(s)"
         check.classList = "error"
         submit.disabled = true
     } else {
