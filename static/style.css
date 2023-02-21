@@ -92,6 +92,10 @@ noscript span {
     display: none;
 }
 
+.logo {
+    width: 400px;
+}
+
 /* #check-match {
     background-color: transparent;
 } */
