@@ -15,16 +15,21 @@ function flash(message, category) {
     flashes_div.append(flash_div)
 }
 
-function check_email() {
-    let check = document.getElementById("check-email")
-    let submit = document.getElementById("submit")
+function check_fields() {
+    let feedback_email = document.getElementById("feedback-email")
+    let feedback_username = document.getElementById("feedback-username")
+    let feedback_password_confirm = document.getElementById("feedback-password-confirm")
     let email = document.getElementById("email").value
+    let username = document.getElementById("username").value
+    let password = document.getElementById("password").value
+    let password_confirm = document.getElementById("password-confirm").value
+    let submit = document.getElementById("submit")
 
-    let fail = null
+    let fail_email = null
     for (let char_ind in email) {
         char = email[char_ind].toLowerCase()
         if (!ALLOWED_EMAIL.includes(char)) {
-            fail = "invalid character(s)"
+            fail_email = "invalid character(s)"
         }
     }
 
@@ -35,55 +40,45 @@ function check_email() {
         email.slice(-1) == "." ||       // . is first character 
         email.split("@").length > 2     // more than one @
     ) {
-        fail = "invalid format"
+        fail_email = "invalid format"
     }
 
-    if (fail) {
-        check.innerHTML = fail
-        check.classList = "error"
-        submit.disabled = true
+    if (fail_email) {
+        feedback_email.innerHTML = fail_email
+        feedback_email.classList = "error"
     } else {
-        check.innerHTML = ""
-        submit.disabled = false
+        feedback_email.innerHTML = ""
     }
-}
 
-function check_username() {
-    let check = document.getElementById("check-username")
-    let submit = document.getElementById("submit")
-    let username_box = document.getElementById("username")
-
-    let fail = false
-    for (let char_ind in username_box.value) {
-        char = username_box.value[char_ind].toLowerCase()
+    let fail_username = false
+    for (let char_ind in username) {
+        char = username[char_ind].toLowerCase()
         if (!ALLOWED_USERNAME.includes(char)) {
-            fail = true
+            fail_username = true
         }
     }
 
-    if (fail) {
-        check.innerHTML = "invalid character(s)"
-        check.classList = "error"
-        submit.disabled = true
+    if (fail_username) {
+        feedback_username.innerHTML = "invalid character(s)"
+        feedback_username.classList = "error"
     } else {
-        check.innerHTML = ""
-        submit.disabled = false
+        feedback_username.innerHTML = ""
     }
-}
 
-function check_password() {
-    let check = document.getElementById("check-match")
-    let submit = document.getElementById("submit")
-    let password_box = document.getElementById("password")
-    let password_confirm_box = document.getElementById("password-confirm")
-
-    if (password_box.value == password_confirm_box.value && password_box.value != "") {
-        check.innerHTML = "good to go!"
-        check.classList = "success"
-        submit.disabled = false
+    let fail_password = false
+    if (password == password_confirm && password != "") {
+        feedback_password_confirm.innerHTML = "good to go!"
+        feedback_password_confirm.classList = "success"
+        fail_password = false
     } else {
-        check.innerHTML = "does not match"
-        check.classList = "error"
+        feedback_password_confirm.innerHTML = "does not match"
+        feedback_password_confirm.classList = "error"
+        fail_password = true
+    }
+
+    if (fail_email || fail_username || fail_password) {
         submit.disabled = true
+    } else {
+        submit.disabled = false
     }
 }

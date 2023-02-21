@@ -80,7 +80,7 @@ def register_handler():
 
     for char in username:
         if char not in ALLOWED_USERNAME:
-            flash("Username can only be a-z, 0-9, - and _")
+            flash("Username can only be a-z, 0-9, - and _,", "error")
             return redirect(url_for("signout.register"))
 
     if confirm_password != password:
@@ -108,18 +108,20 @@ def login():
 
 @signout.route("/login/handler", methods=["POST"])
 def login_handler():
-    username = request.form.get("username").lower()
+    identifier = request.form.get("identifier").lower()
     password = request.form.get("password")
 
+    ident_type = "email" if "@" in identifier else "username"
+
     user = g.cur.execute(
-        "SELECT id, password_hash FROM users WHERE username = ?", (username,)
+        f"SELECT id, password_hash, username FROM users WHERE {ident_type} = ?", (identifier,)
     ).fetchone()
 
     if user:
         if check_password_hash(user[1], password):
             session.clear()
             session["user_id"] = user[0]
-            flash(f"Successfully logged in as {username}!", "success")
+            flash(f"Successfully logged in as {user[2]}!", "success")
             return redirect(url_for("signout.panel"))
 
         else:
