@@ -96,6 +96,11 @@ noscript span {
     width: 400px;
 }
 
+.container {
+    width: 960px;
+    background-color: var(--accent);
+}
+
 /* #check-match {
     background-color: transparent;
 } */
