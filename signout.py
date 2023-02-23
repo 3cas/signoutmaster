@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 from datetime import datetime
+import json
 
 import tools
 import setup
@@ -9,7 +10,7 @@ import setup
 signout = Blueprint("signout", __name__)
 
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
-ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890_-@+~."
+ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 def now(): return int(datetime.timestamp(datetime.now()))
 
@@ -163,12 +164,46 @@ def onboarding():
 def settings():
     if not check_user(): return no_user()
 
-    return render_template("settings.html")
+    user_settings = g.cur.execute(
+        "SELECT config FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()[0]
+    user_settings = json.loads(user_settings)
 
-@signout.route("/panel/settings/apply")
+    return render_template("settings.html", settings=user_settings)
+
+@signout.route("/panel/settings/apply", methods=["POST"])
 def apply_settings():
     if not check_user(): return no_user()
-    # ...
+
+    remove_location = request.form.get("remove-location")
+    add_location = request.form.get("add-location")
+    add_location_time = request.form.get("add-location-time")
+
+    user_settings = g.cur.execute(
+        "SELECT config FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()[0]
+    user_settings = json.loads(user_settings)
+
+    if "locations" not in user_settings:
+        user_settings["locations"] = []
+
+    if remove_location:
+        for location in user_settings["locations"]:
+            if location[0] == remove_location:
+                user_settings["locations"].remove(location)
+
+    if add_location:
+        user_settings["locations"].append([add_location, add_location_time])
+
+    user_settings = json.dumps(user_settings)
+
+    g.cur.execute(
+        "UPDATE users SET config = ? WHERE id = ?",
+        (user_settings, session["user_id"])
+    )
+
     flash("Applied changes!", "success")
     return redirect(url_for("signout.settings"))
 
