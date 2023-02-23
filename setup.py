@@ -1,8 +1,6 @@
 import os
 import sqlite3
 
-print("inside setup.py!")
-
 if not os.path.isdir("instance"):
     os.mkdir("instance")
     print("Instance directory was created")
