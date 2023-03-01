@@ -156,17 +156,16 @@ def panel():
     if not check_user(): return no_user()
 
     user = g.cur.execute(
-        "SELECT username, config FROM users WHERE id = ?",
+        "SELECT username, schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
 
-    username = user[0]
     try:
-        config = json.loads(user[1])
+        user[1] = json.loads(user[1])
     except:
-        config = {}
+        user[1] = {}
 
-    return render_template("panel.html", username=username, config=config)
+    return render_template("panel.html", user=user)
 
 # onboarding settings (?)
 @signout.route("/panel/onboarding")
@@ -242,7 +241,7 @@ def student():
     return "student panel"
 
 # student panel signout or in backend
-@signout.route("/panel/sign", methods=["POST"])
+@signout.route("/panel/student/sign", methods=["POST"])
 def sign():
     if not check_user(): return no_user()
 
