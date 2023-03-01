@@ -14,6 +14,7 @@ ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 def now(): return int(datetime.timestamp(datetime.now()))
 
+# function that checks if a user exists
 def check_user():
     if ("user_id" not in session) or (not session["user_id"]):
         return False
@@ -29,26 +30,31 @@ def check_user():
 
     return True
 
+# redirect to login page
 def no_user():
     flash("You must be logged in!", "error")
     return redirect(url_for("signout.login"))
 
 # if not check_user(): return no_user()
 
+# connect to database before every request
 @signout.before_request
 def before_request():
     g.db = tools.get_db("signout.db")
     g.cur = g.db.cursor()
 
+# split() functionality within templates
 @signout.app_template_filter("split")
 def my_split(text: str, splitter: str):
     return text.split(splitter)
 
+# do not cache page
 @signout.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, post-check=0, pre-check=0"
     return response
 
+# home page
 @signout.route("/")
 @signout.route("/home")
 def home():
@@ -62,10 +68,12 @@ def home():
 
     return render_template("home.html", username=username)
 
+# register view
 @signout.route("/register")
 def register():
     return render_template("register.html")
 
+# register backend
 @signout.route("/register/handler", methods=["POST"])
 def register_handler():
     email = request.form.get("email").lower()
@@ -103,10 +111,12 @@ def register_handler():
             flash(f"Account {username} successfully created. You can now login.", "success")
             return redirect(url_for("signout.login"))
 
+# login view
 @signout.route("/login")
 def login():
     return render_template("login.html")
 
+# login backend
 @signout.route("/login/handler", methods=["POST"])
 def login_handler():
     identifier = request.form.get("identifier").lower()
@@ -133,12 +143,14 @@ def login_handler():
         flash("That account doesn't exist!", "error")
         return redirect(url_for("signout.login"))
 
+# logout redirect
 @signout.route("/logout")
 def logout():
     session.clear()
     flash("You have been logged out!", "success")
     return redirect(url_for("signout.home"))
 
+# panel with settings, monitor, student view, and logout
 @signout.route("/panel")
 def panel():
     if not check_user(): return no_user()
@@ -150,16 +162,18 @@ def panel():
 
     username = user[0]
     try:
-        config = dict(user[1])
+        config = json.loads(user[1])
     except:
         config = {}
 
     return render_template("panel.html", username=username, config=config)
 
+# onboarding settings (?)
 @signout.route("/panel/onboarding")
 def onboarding():
     return render_template("onboarding.html")
 
+# settings page
 @signout.route("/panel/settings")
 def settings():
     if not check_user(): return no_user()
@@ -172,33 +186,39 @@ def settings():
 
     return render_template("settings.html", settings=user_settings)
 
+# apply settings backend
 @signout.route("/panel/settings/apply", methods=["POST"])
 def apply_settings():
     if not check_user(): return no_user()
 
+    # get all optional settings parameters
     remove_location = request.form.get("remove-location")
     add_location = request.form.get("add-location")
     add_location_time = request.form.get("add-location-time")
 
+    # get dictionary of user settings
     user_settings = g.cur.execute(
         "SELECT config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()[0]
     user_settings = json.loads(user_settings)
 
+    # initialize user settings
     if "locations" not in user_settings:
         user_settings["locations"] = []
+
+    # apply settings
 
     if remove_location:
         for location in user_settings["locations"]:
             if location[0] == remove_location:
                 user_settings["locations"].remove(location)
-
+    
     if add_location:
         user_settings["locations"].append([add_location, add_location_time])
 
+    # put user settings back in database
     user_settings = json.dumps(user_settings)
-
     g.cur.execute(
         "UPDATE users SET config = ? WHERE id = ?",
         (user_settings, session["user_id"])
@@ -207,28 +227,33 @@ def apply_settings():
     flash("Applied changes!", "success")
     return redirect(url_for("signout.settings"))
 
+# monitor student signouts
 @signout.route("/panel/monitor")
 def monitor():
     if not check_user(): return no_user()
 
     return "monitoring page"
 
+# student view of panel, must re-login to be admin
 @signout.route("/panel/student")
 def student():
     if not check_user(): return no_user()
 
     return "student panel"
 
+# student panel signout or in backend
 @signout.route("/panel/sign", methods=["POST"])
 def sign():
     if not check_user(): return no_user()
 
     return "signing out or in"
 
+# unimplemented share link feature
 @signout.route("/share/<public_id>")
 def student_public(public_id):
     return "student panel public share link"
 
+# wip username/email/etc taken checker
 @signout.route("/check")
 def check_available():
     field = request.args.get("field")
@@ -250,6 +275,7 @@ def check_available():
     else:
         return "free"
 
+# commit and close database connection 
 @signout.after_request
 def after_request(response):
     if hasattr(g, "db"):

@@ -99,4 +99,5 @@ noscript span {
 .container {
     width: 960px;
     background-color: var(--accent);
+    padding: 10px;
 }
