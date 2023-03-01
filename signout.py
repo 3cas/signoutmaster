@@ -159,11 +159,12 @@ def panel():
         "SELECT username, schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
+    user = list(user)
 
     try:
-        user[1] = json.loads(user[1])
+        user[2] = json.loads(user[2])
     except:
-        user[1] = {}
+        user[2] = {}
 
     return render_template("panel.html", user=user)
 

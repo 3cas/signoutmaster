@@ -4,13 +4,13 @@
 
 {% block content %}
     {{ flashes() }}
-    <p>Logged in as {{ user[1] }}.</p>
+    <p>Logged in as <b>{{ user[1] }}</b>.</p>
     {% if not user[2] %}
         <p>Thank you for creating your account! In order to access the panel and use the service, you must set <a href="{{ url_for('signout.settings') }}">necessary settings</a>.</p>
-    {% else %}the
-        <p><a href="{{ url_for('signout.monitor') }}">Monitor students</a></p>
-        <p><a href="{{ url_for('signout.settings') }}">Settings</a></p>
-        <p><a href="{{ url_for('signout.student') }}">Enter student mode</a></p>
-        <p><a href="{{ url_for('signout.logout') }}">Log out of {{ user[1] }}</a></p>
+    {% else %}
+        <a href="{{ url_for('signout.monitor') }}">Monitor students</a><br>
+        <a href="{{ url_for('signout.settings') }}">Settings</a><br>
+        <a href="{{ url_for('signout.student') }}">Enter student mode</a><br>
+        <a href="{{ url_for('signout.logout') }}">Log out of {{ user[1] }}</a>
     {% endif %}
 {% endblock %}
