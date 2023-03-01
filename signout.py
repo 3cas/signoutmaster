@@ -14,10 +14,13 @@ ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 def now(): return int(datetime.timestamp(datetime.now()))
 
-# function that checks if a user exists
-def check_user():
-    if ("user_id" not in session) or (not session["user_id"]):
-        return False
+# function that checks if a user is logged in
+def check_user(can_be_student: bool = False):
+    LOGIN_ERROR = ["You must be logged in!", "signout.login"]
+    STUDENT_MODE = ["Student mode only", "signout.student"]
+
+    if "user_id" not in session or not session["user_id"]:
+        return LOGIN_ERROR
     
     user = g.cur.execute(
         "SELECT username FROM users WHERE id = ?",
@@ -26,16 +29,21 @@ def check_user():
 
     if not user:
         session.clear()
-        return False
+        return LOGIN_ERROR
 
-    return True
+    if not can_be_student and "student_lock" in session and session["student_lock"]:
+        return STUDENT_MODE
 
-# redirect to login page
-def no_user():
-    flash("You must be logged in!", "error")
-    return redirect(url_for("signout.login"))
+    return None
 
-# if not check_user(): return no_user()
+# flash error and redirect, used only for session checking atm
+def user_error(error: list):
+    flash(error[0], "error")
+    return redirect(url_for(error[1]))
+
+# the following code checks if a user can view the page and returns the proper error if not
+# assignment operator checks if there is an error and assigns any error to the error variable
+# if error := check_user(): return user_error(error)
 
 # connect to database before every request
 @signout.before_request
@@ -153,7 +161,7 @@ def logout():
 # panel with settings, monitor, student view, and logout
 @signout.route("/panel")
 def panel():
-    if not check_user(): return no_user()
+    if error := check_user(): return user_error(error)
 
     user = g.cur.execute(
         "SELECT username, schoolname, config FROM users WHERE id = ?",
@@ -176,7 +184,7 @@ def onboarding():
 # settings page
 @signout.route("/panel/settings")
 def settings():
-    if not check_user(): return no_user()
+    if error := check_user(): return user_error(error)
 
     user_settings = g.cur.execute(
         "SELECT config FROM users WHERE id = ?",
@@ -189,7 +197,7 @@ def settings():
 # apply settings backend
 @signout.route("/panel/settings/apply", methods=["POST"])
 def apply_settings():
-    if not check_user(): return no_user()
+    if error := check_user(): return user_error(error)
 
     # get all optional settings parameters
     remove_location = request.form.get("remove-location")
@@ -230,21 +238,29 @@ def apply_settings():
 # monitor student signouts
 @signout.route("/panel/monitor")
 def monitor():
-    if not check_user(): return no_user()
+    if error := check_user(): return user_error(error)
 
     return "monitoring page"
+
+# lock panel in student mode
+@signout.route("/panel/lock")
+def lock():
+    if error := check_user(): return user_error(error)
+    session["student_lock"] = True
+    
+    return redirect(url_for("signout.student"))
 
 # student view of panel, must re-login to be admin
 @signout.route("/panel/student")
 def student():
-    if not check_user(): return no_user()
+    if error := check_user(True): return user_error(error)
 
     return "student panel"
 
 # student panel signout or in backend
 @signout.route("/panel/student/sign", methods=["POST"])
 def sign():
-    if not check_user(): return no_user()
+    if error := check_user(True): return user_error(error)
 
     return "signing out or in"
 
