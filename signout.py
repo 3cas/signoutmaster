@@ -15,9 +15,9 @@ ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 def now(): return int(datetime.timestamp(datetime.now()))
 
 # function that checks if a user is logged in
-def check_user(can_be_student: bool = False):
+def check_user(can_view_as_student: bool = False):
     LOGIN_ERROR = ["You must be logged in!", "signout.login"]
-    STUDENT_MODE = ["Student mode only", "signout.student"]
+    STUDENT_MODE = ["This device is locked to student mode", "signout.student"]
 
     if "user_id" not in session or not session["user_id"]:
         return LOGIN_ERROR
@@ -31,7 +31,7 @@ def check_user(can_be_student: bool = False):
         session.clear()
         return LOGIN_ERROR
 
-    if not can_be_student and "student_lock" in session and session["student_lock"]:
+    if not can_view_as_student and "student_lock" in session and session["student_lock"]:
         return STUDENT_MODE
 
     return None
@@ -66,7 +66,7 @@ def after_request(response):
 @signout.route("/")
 @signout.route("/home")
 def home():
-    if check_user():
+    if not check_user():
         username = g.cur.execute(
             "SELECT username FROM users WHERE id = ?",
             (session["user_id"],)
@@ -240,12 +240,13 @@ def apply_settings():
 def monitor():
     if error := check_user(): return user_error(error)
 
-    return "monitoring page"
+    return render_template("monitor.html")
 
 # lock panel in student mode
 @signout.route("/panel/lock")
-def lock():
+def student_lock():
     if error := check_user(): return user_error(error)
+    flash("The panel has been locked in student mode", "info")
     session["student_lock"] = True
     
     return redirect(url_for("signout.student"))
@@ -255,7 +256,7 @@ def lock():
 def student():
     if error := check_user(True): return user_error(error)
 
-    return "student panel"
+    return render_template("student.html")
 
 # student panel signout or in backend
 @signout.route("/panel/student/sign", methods=["POST"])

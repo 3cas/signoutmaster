@@ -10,7 +10,7 @@
     {% else %}
         <a href="{{ url_for('signout.monitor') }}">Monitor students</a><br>
         <a href="{{ url_for('signout.settings') }}">Settings</a><br>
-        <a href="{{ url_for('signout.student') }}">Enter student mode</a><br>
+        <a href="{{ url_for('signout.student_lock') }}">Enter student mode</a> (will require signing back in)<br>
         <a href="{{ url_for('signout.logout') }}">Log out of {{ user[1] }}</a>
     {% endif %}
 {% endblock %}
