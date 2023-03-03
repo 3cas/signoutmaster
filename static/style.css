@@ -101,3 +101,32 @@ noscript span {
     background-color: var(--accent);
     padding: 10px;
 }
+
+.niceborder {
+    padding: 20px;
+    border-color: var(--accent);
+    border-style: dashed;
+    border-width: 5px;
+    border-radius: 10px;
+}
+
+.ct, .spacer * {
+    text-align: center;
+    width: 100%;
+}
+
+.title {
+    color: var(--accent);
+    font-size: 30pt;
+}
+
+.spacer {
+    width: 100px;
+}
+
+.center {
+    justify-content: space-evenly;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}

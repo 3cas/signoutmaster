@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "center.html" %}
 
-{% block body %}
+{% block content %}
     <div class="center ct">
         <div class="spacer"></div>
         <h2 class="title">Signout</h2>
@@ -8,55 +8,51 @@
             <span class='accent'>$friendly_time</span>
         </div>
     </div>
-    <div class="center">
-        <div class="col niceborder">
-            <form action="signout.php" autocomplete="off">
-                <table>
-                    <tr>
-                        <td><label for="id">ID:</label></td>
-                        <td><input type="text" name="id" minlength="4" maxlength="8" required></td>
-                    </tr>
-                    <tr>
-                        <td><label for="dest">Destination:</label></td>
-                        <td>
-                            <input type="radio" name="dest" id="option-return" value="return" checked="checked">
-                            <label for="return">Sign back in</label>
-                        </td>
-                    </tr>
-                    {% for option in options %}
-                        <tr>
-                            <td></td>
-                            <td>
-                                <input type='radio' name='dest' id='option-$option_lower' value='$option_lower'>
-                                <label for='$option_lower'>$option</label>
-                            </td>
-                        </tr>
-                    {% endfor %}
+    <div class="col niceborder">
+        <form action="signout.php" autocomplete="off">
+            <table>
+                <tr>
+                    <td><label for="id">ID:</label></td>
+                    <td><input type="text" name="id" minlength="4" maxlength="8" required></td>
+                </tr>
+                <tr>
+                    <td><label for="dest">Destination:</label></td>
+                    <td>
+                        <input type="radio" name="dest" id="option-return" value="return" checked="checked">
+                        <label for="return">Sign back in</label>
+                    </td>
+                </tr>
+                {% for option in options %}
                     <tr>
                         <td></td>
                         <td>
-                            <input type="radio" name="dest" id="otherbtn" value="other">
-                            <input type="text" name="other" id="otherval" placeholder="Other" maxlength="50">
+                            <input type='radio' name='dest' id='option-$option_lower' value='$option_lower'>
+                            <label for='$option_lower'>$option</label>
                         </td>
                     </tr>
-                    <tr>
-                        <td><label for="dismiss">Going home?</label></td>
-                        <td>
-                            <input type="checkbox" name="dismiss" id="dismiss">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><input type="submit"></td>
-                    </tr>
-                </table>
-            </form>
-        </div>
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="radio" name="dest" id="otherbtn" value="other">
+                        <input type="text" name="other" id="otherval" placeholder="Other" maxlength="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="dismiss">Going home?</label></td>
+                    <td>
+                        <input type="checkbox" name="dismiss" id="dismiss">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit"></td>
+                </tr>
+            </table>
+        </form>
     </div>
-    <div class="center">
-        <div class="col ct">
-            <p style='color: $color;'>$message</p>
-            <br>
-            <a href="teacher.php">go to teacher view</a>
-        </div>
+    <div class="col ct">
+        <p style='color: $color;'>$message</p>
+        <br>
+        <a href="teacher.php">go to teacher view</a>
     </div>
 {% endblock %}
