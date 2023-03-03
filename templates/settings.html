@@ -4,6 +4,13 @@
     <div class="container">
         <h3>Edit Locations</h3>
         <ul>
+            <li>
+                <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                    <input type="text" name="add-location" placeholder="add location..." required>
+                    <input type="text" name="add-location-time" placeholder="max mins" value="10" required>
+                    <input type="submit" value="&#x2795;"> 
+                </form>
+            </li>
             {% if "locations" in settings and settings["locations"]|length > 0 %}
                 {% for location in settings["locations"] %}
                     <li>  
@@ -18,13 +25,6 @@
             {% else %}
                 <li><i>No locations yet!</i></li>
             {% endif %}
-            <li>
-                <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                    <input type="text" name="add-location" placeholder="add location..." required>
-                    <input type="text" name="add-location-time" placeholder="max mins" value="10" required>
-                    <input type="submit" value="&#x2795;"> 
-                </form>
-            </li>
         <ul>
     </div>
 {% endblock %}
