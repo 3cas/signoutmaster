@@ -15,6 +15,15 @@ function flash(message, category) {
     flashes_div.append(flash_div)
 }
 
+function delete_flash(button) {
+    let flash_message = button.parentElement.querySelector("span").value
+    let index = flashes.indexOf(flash_message)
+    if (index > -1) {
+        flashes.splice(index, 1)
+    }
+    button.parentElement.remove()
+}
+
 function check_fields() {
     let feedback_email = document.getElementById("feedback-email")
     let feedback_username = document.getElementById("feedback-username")

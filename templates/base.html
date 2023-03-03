@@ -3,6 +3,7 @@
         {% for category, message in get_flashed_messages(with_categories=true) %}
             <div class="flash {{ category }}">
                 <span>{{ message }}</span>
+                <button onclick="delete_flash(this)">&#x2716;</button>
             </div>
         {% endfor %}
     </div>
