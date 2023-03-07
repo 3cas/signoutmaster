@@ -243,7 +243,7 @@ def monitor():
 @signout.route("/panel/lock")
 def student_lock():
     if error := check_user(): return user_error(error)
-    flash("The panel has been locked in student mode", "info")
+    flash("The panel has been locked in student mode", "message")
     session["student_lock"] = True
     
     return redirect(url_for("signout.student"))
