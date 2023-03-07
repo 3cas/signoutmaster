@@ -1,4 +1,4 @@
-{% macro flashes() %}
+{% macro get_flashes() %}
     <div id="flashes">
         {% for category, message in get_flashed_messages(with_categories=true) %}
             <div class="flash {{ category }}">
