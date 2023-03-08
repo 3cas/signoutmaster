@@ -12,7 +12,8 @@ signout = Blueprint("signout", __name__)
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
 ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
-def now(): return int(datetime.timestamp(datetime.now()))
+def now(): return int(datetime.timestamp(datetime.utcnow()))
+# datetime.fromtimestamp(timestamp).strftime("%m/%d/%y(%a)%H:%M:%S")
 
 # function that checks if a user is logged in
 def check_user(can_view_as_student: bool = False):
@@ -50,11 +51,6 @@ def user_error(error: list):
 def before_request():
     g.db = tools.get_db("signout.db")
     g.cur = g.db.cursor()
-
-# split() functionality within templates
-@signout.app_template_filter("split")
-def my_split(text: str, splitter: str):
-    return text.split(splitter)
 
 # home page
 @signout.route("/")
@@ -161,14 +157,17 @@ def panel():
         "SELECT username, schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
-    user = list(user)
+    
+    username = user[0]
+    schoolname = user[1]
+    settings = user[2]
 
     try:
-        user[2] = json.loads(user[2])
+        settings = json.loads(settings)
     except:
-        user[2] = {}
+        settings = {}
 
-    return render_template("panel.html", user=user)
+    return render_template("panel.html", username=username, schoolname=schoolname, settings=settings)
 
 # onboarding settings (?)
 @signout.route("/panel/onboarding")
@@ -193,11 +192,6 @@ def settings():
 def apply_settings():
     if error := check_user(): return user_error(error)
 
-    # get all optional settings parameters
-    remove_location = request.form.get("remove-location")
-    add_location = request.form.get("add-location")
-    add_location_time = request.form.get("add-location-time")
-
     # get dictionary of user settings
     user_settings = g.cur.execute(
         "SELECT config FROM users WHERE id = ?",
@@ -207,17 +201,20 @@ def apply_settings():
 
     # initialize user settings
     if "locations" not in user_settings:
-        user_settings["locations"] = []
+        user_settings["locations"] = {}
+
+    # get all optional settings parameters
+    remove_location = request.form.get("remove-location")
+    add_location = request.form.get("add-location")
+    add_location_time = request.form.get("add-location-time")
 
     # apply settings
 
     if remove_location:
-        for location in user_settings["locations"]:
-            if location[0] == remove_location:
-                user_settings["locations"].remove(location)
+        user_settings["locations"].remove(remove_location)
     
-    if add_location:
-        user_settings["locations"].append([add_location, add_location_time])
+    if add_location and add_location_time:
+        user_settings["locations"][add_location] = add_location_time
 
     # put user settings back in database
     user_settings = json.dumps(user_settings)
@@ -240,7 +237,7 @@ def monitor():
 @signout.route("/panel/lock")
 def student_lock():
     if error := check_user(): return user_error(error)
-    flash("The panel has been locked in student mode", "info")
+    flash("The panel has been locked in student mode", "message")
     session["student_lock"] = True
     
     return redirect(url_for("signout.student"))
@@ -250,7 +247,17 @@ def student_lock():
 def student():
     if error := check_user(True): return user_error(error)
 
-    return render_template("student.html")
+    user = g.cur.execute(
+        "SELECT schoolname, config FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()
+    schoolname = user[0]
+    settings = user[1]
+    settings = json.loads(settings)
+
+    time = datetime.utcnow().strftime("%-I:%M %p")
+
+    return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
 
 # student panel signout or in backend
 @signout.route("/panel/student/sign", methods=["POST"])

@@ -3,37 +3,61 @@
 {% block body %}
     <div class="center ct">
         <div class="spacer">
-            <a href="signout.php" class="accent">go back</a>
+            <a href="{{ url_for('signout.panel') }}" class="accent">go back</a>
         </div>
-        <p class="title">Teacher View</p>
+        <p class="title">Monitor Mode</p>
         <div class="spacer">
-            <span class='accent'>$friendly_time</span>
+            <span class="accent">{{ time }}</span>
         </div>
     </div>
     <div class="center">
         <div class="col niceborder">
             <h2>Currently signed out</h2>
-                <table class='bordered'>
+            {% if current_signouts %}
+                <table class="bordered">
                     <tr>
                         <th>Student ID</th>
                         <th>Destination</th>
                         <th>Time out</th>
                         <th>Time since</th>
-                        <th>Manual sign-in</th>
+                        <th><img src="{{ url_for('static', filename='flag_grayscale.png') }}" title="Flagged for being out too long"></th>
+                        <th>Return student</th>
                     </tr>
+                    {% for signout in current_signouts %}
+                        {% if time - signout[4] > settings["locations"][signout[3]] %}
+                            {% set flagged = True %}
+                            {% set color = "red" %}
+                        {% else %}
+                            {% set flagged = False %}
+                            {% set color = "black" %}
+                        {% endif %}
                         <tr>
-                            <td>$student</td>
-                            <td>$destination</td>
-                            <td>$time_out</td>
-                            <td style='color: $mins_color;'>$mins_since minutes</td>
-                            <td><a href='signout.php?id=$student&dest=return&redir=1'>Return</a></td>
+                            <td>{{ signout[2] }}</td>
+                            <td>{{ signout[3] }}</td>
+                            <td>{{ signout[4] }}</td>
+                            <td style="color: {{ color }};">
+                                <span>{{ time - signout[4] }}</span>
+                                {% if flagged %}
+                                    <img src="{{ url_for('static', filename='flag.png') }}">
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{{ url_for('signout.sign') }}">
+                                    <input type="text" name="id" value="{{ signout[2] }}" hidden>
+                                    <input type="text" name="destination" value="{{ signout[3] }}" hidden>
+                                    <input type="text" name="monitor" value="1" hidden>
+                                    <input type="submit" value="Return">
+                                </form>
+                            </td>
                         </tr>
-                        
-                </table>";
+                    {% endfor %}
+                </table>
+            {% else %}
                 <p>No one is currently signed out.</p>
-                <p>There was an SQL error.</p>
+            {% endif %}
             <h2>Past signouts</h2>
-                <table class='bordered'>
+            {% if past_signouts %}
+                <table class="bordered">
                     <tr>
                         <th>Student ID</th>
                         <th>Destination</th>
@@ -41,19 +65,29 @@
                         <th>Time in</th>
                         <th>Total time</th>
                     </tr>
+                    {% for signout in past_signouts %}
+                        {% if time - signout[4] > settings["locations"][signout[3]] %}
+                            {% set flagged = True %}
+                            {% set color = "red" %}
+                        {% else %}
+                            {% set flagged = False %}
+                            {% set color = "black" %}
+                        {% endif %}
                         <tr>
-                            <td>$student</td>
-                            <td>$destination</td>
-                            <td>$time_out</td>
-                            <td>$time_in</td>
-                            <td style='color: $mins_color;'>$total_mins minutes</td>
+                            <td>{{ signout[2] }}</td>
+                            <td>{{ signout[3] }}</td>
+                            <td>{{ signout[4] }}</td>
+                            <td>{{ signout[5] }}</td>
+                            <td style="color: {{ color }};">{{ signout[5] - signout[4] }}</td>
                         </tr>
+                    {% endfor %}
                 </table>";
+            {% else %}
                 <p>No past signouts have occurred.</p>
-                <p>There was an SQL error.</p>
+            {% endif %}
         </div>
     </div>
     <div class="center">
-        <p><a href="signout.php" class="center">back to student view</a></p>
+        <p><a href="{{ url_for('signout.panel') }}" class="center">back to panel</a></p>
     </div>
 {% endblock %}
