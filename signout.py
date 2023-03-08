@@ -56,12 +56,6 @@ def before_request():
 def my_split(text: str, splitter: str):
     return text.split(splitter)
 
-# do not cache page
-@signout.after_request
-def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, post-check=0, pre-check=0"
-    return response
-
 # home page
 @signout.route("/")
 @signout.route("/home")
@@ -292,9 +286,10 @@ def check_available():
     else:
         return "free"
 
-# commit and close database connection 
+# commit and close database connection,  do not cache
 @signout.after_request
 def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, post-check=0, pre-check=0"
     if hasattr(g, "db"):
         g.db.commit()
         g.db.close()
