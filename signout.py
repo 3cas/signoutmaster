@@ -264,6 +264,11 @@ def student():
 def sign():
     if error := check_user(True): return user_error(error)
 
+    student_id = request.form.get("id")
+    destination = request.form.get("destination")
+    other = request.form.get("other")
+    dismiss = request.form.get("dismiss")
+
     return "signing out or in"
 
 # unimplemented share link feature
