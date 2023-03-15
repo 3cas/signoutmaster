@@ -2,29 +2,35 @@
 
 {% block content %}
     <div class="container">
+        <a class="button" href="{{ url_for('signout.panel') }}">back</a>
         <h3>Edit Locations</h3>
-        <ul>
-            <li>
+        <table>
+            <tr>
+                <th>Location Name</th>
+                <th>Max time (mins)</th>
+                <td></td>
+            </tr>
+            <tr>
                 <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                    <input type="text" name="add-location" placeholder="add location..." required>
-                    <input type="text" name="add-location-time" placeholder="max mins" value="10" required>
-                    <input type="submit" value="&#x2795;"> 
+                    <td><input type="text" name="add-location" placeholder="Add location..." size="15" maxlength="64" required></td>
+                    <td><input type="text" name="add-location-time" placeholder="Max time" size="5" maxlength="3" required></td>
+                    <td><input type="submit" value="&#x2795;"></td>
                 </form>
-            </li>
+            </tr>
             {% if "locations" in settings and settings["locations"]|length > 0 %}
                 {% for location in settings["locations"] %}
-                    <li>  
+                    <tr>
                         <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                            <span>{{ location[0] }}</span>
-                            <span>{{ location[1] }}</span>
-                            <input type="text" name="remove-location" value="{{ location[0] }}" hidden>
-                            <input type="submit" value="&#x2716;">
+                            <td><span>{{ location }}</span></td>
+                            <td><span>{{ settings["locations"][location] }}</span></td>
+                            <input type="text" name="remove-location" value="{{ location }}" hidden>
+                            <td><input type="submit" value="&#x2716;"></td>
                         </form>
-                    </li>
+                    </tr>
                 {% endfor %}
             {% else %}
-                <li><i>No locations yet!</i></li>
+                <tr><td colspan="3"><i>No locations yet!</i></td></tr>
             {% endif %}
-        <ul>
+        </table>
     </div>
 {% endblock %}
