@@ -80,6 +80,26 @@ def register_handler():
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
+    if not (email and schoolname and username and password and confirm_password):
+        flash("You must fill out all fields", "error")
+        return redirect(url_for("signout.register"))
+    
+    if not 6 <= len(email) <= 64:
+        flash("Email must be between 6 and 64 characters")
+        return redirect(url_for("signout.register"))
+    
+    if not 3 <= len(schoolname) <= 64:
+        flash("School name must be between 3 and 64 characters", "error")
+        return redirect(url_for("signout.register"))
+    
+    if not 3 <= len(username) <= 16:
+        flash("Username must be between 3 and 16 characters", "error")
+        return redirect(url_for("signout.register"))
+    
+    if not 8 <= len(password) <= 64:
+        flash("Password must be between 8 and 64 characters", "error")
+        return redirect(url_for("signout.register"))
+
     for char in email:
         if char not in ALLOWED_EMAIL:
             flash("Email contains invalid characters", "error")
@@ -268,6 +288,19 @@ def sign():
     destination = request.form.get("destination")
     other = request.form.get("other")
     dismiss = request.form.get("dismiss")
+
+    if not (student_id and destination):
+        flash("Not enough parameters", "error")
+        return redirect(url_for("signout.student"))
+    
+    if destination == "return":
+        
+        
+        return redirect(url_for("signout.student"))
+
+    if destination == "other":
+        if other:
+            destination = other
 
     return "signing out or in"
 
