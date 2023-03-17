@@ -186,8 +186,17 @@ def panel():
         settings = json.loads(settings)
     except:
         settings = {}
+        onboard = True
+    else:
+        if not (
+            "locations" in settings and 
+            len(settings["locations"]) > 0
+        ):
+            onboard = True
+        else:
+            onboard = False
 
-    return render_template("panel.html", username=username, schoolname=schoolname, settings=settings)
+    return render_template("panel.html", username=username, schoolname=schoolname, onboard=onboard)
 
 # onboarding settings (?)
 @signout.route("/panel/onboarding")
@@ -231,7 +240,7 @@ def apply_settings():
     # apply settings
 
     if remove_location:
-        user_settings["locations"].remove(remove_location)
+        del user_settings["locations"][remove_location]
     
     if add_location and add_location_time:
         user_settings["locations"][add_location] = add_location_time

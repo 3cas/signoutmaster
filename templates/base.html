@@ -1,12 +1,19 @@
 {% macro get_flashes() %}
     <div id="flashes">
         {% for category, message in get_flashed_messages(with_categories=true) %}
+            {% if not category %}
+                {% set category = "message" %}
+            {% endif %}
             <div class="flash {{ category }}">
                 <span>{{ message }}</span>
                 <button onclick="delete_flash(this)">&#x2716;</button>
             </div>
         {% endfor %}
     </div>
+{% endmacro %}
+
+{% macro info(key) %}
+    <span
 {% endmacro %}
 
 <!DOCTYPE html>
