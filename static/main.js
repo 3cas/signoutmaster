@@ -54,7 +54,7 @@ function check_fields() {
 
     if (fail_email) {
         feedback_email.innerHTML = fail_email
-        feedback_email.classList = "error"
+        feedback_email.classList = "neg"
     } else {
         feedback_email.innerHTML = ""
     }
@@ -69,7 +69,7 @@ function check_fields() {
 
     if (fail_username) {
         feedback_username.innerHTML = "invalid character(s)"
-        feedback_username.classList = "error"
+        feedback_username.classList = "neg"
     } else {
         feedback_username.innerHTML = ""
     }
@@ -77,11 +77,11 @@ function check_fields() {
     let fail_password = false
     if (password == password_confirm && password != "") {
         feedback_password_confirm.innerHTML = "good to go!"
-        feedback_password_confirm.classList = "success"
+        feedback_password_confirm.classList = "pos"
         fail_password = false
     } else {
         feedback_password_confirm.innerHTML = "does not match"
-        feedback_password_confirm.classList = "error"
+        feedback_password_confirm.classList = "neg"
         fail_password = true
     }
 

@@ -33,19 +33,21 @@
                         </td>
                     </tr>
                 {% endfor %}
-                <tr>
-                    <td></td>
-                    <td>
-                        <input type="radio" name="destination" id="otherbtn" value="other">
-                        <input type="text" name="other" id="otherval" placeholder="Other" maxlength="50">
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="dismiss">Going home?</label></td>
-                    <td>
-                        <input type="checkbox" name="dismiss" id="dismiss">
-                    </td>
-                </tr>
+                {% if settings["allow_other"] %}
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="radio" name="destination" id="otherbtn" value="other">
+                            <input type="text" name="other" id="otherval" placeholder="Other" maxlength="50">
+                        </td>
+                    </tr>
+                {% endif %}
+                {% if settings["allow_leave"] %}
+                    <tr>
+                        <td><label for="dismiss">Going home?</label></td>
+                        <td><input type="checkbox" name="dismiss" id="dismiss"></td>
+                    </tr>
+                {% endif %}
                 <tr>
                     <td colspan="2"><input type="submit"></td>
                 </tr>

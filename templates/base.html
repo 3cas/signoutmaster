@@ -2,7 +2,7 @@
     <div id="flashes">
         {% for category, message in get_flashed_messages(with_categories=true) %}
             {% if not category %}
-                {% set category = "message" %}
+                {% set category = "inf" %}
             {% endif %}
             <div class="flash {{ category }}">
                 <span>{{ message }}</span>
@@ -13,7 +13,7 @@
 {% endmacro %}
 
 {% macro info(key) %}
-    <span
+    <span>info icon goes here</span>
 {% endmacro %}
 
 <!DOCTYPE html>

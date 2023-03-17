@@ -12,6 +12,16 @@ signout = Blueprint("signout", __name__)
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
 ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
+DEFAULT_SETTINGS = {
+    "locations": {
+        "bathroom": 10,
+        "nurse": 30,
+        "office": 15
+    },
+    "allow_other": True,
+    "allow_leave": True
+}
+
 def now(): return int(datetime.timestamp(datetime.utcnow()))
 # datetime.fromtimestamp(timestamp).strftime("%m/%d/%y(%a)%H:%M:%S")
 
@@ -39,7 +49,7 @@ def check_user(can_view_as_student: bool = False):
 
 # flash error and redirect, used only for session checking atm
 def user_error(error: list):
-    flash(error[0], "error")
+    flash(error[0], "neg")
     return redirect(url_for(error[1]))
 
 # the following code checks if a user can view the page and returns the proper error if not
@@ -81,7 +91,7 @@ def register_handler():
     confirm_password = request.form.get("confirm_password")
 
     if not (email and schoolname and username and password and confirm_password):
-        flash("You must fill out all fields", "error")
+        flash("You must fill out all fields", "neg")
         return redirect(url_for("signout.register"))
     
     if not 6 <= len(email) <= 64:
@@ -89,44 +99,46 @@ def register_handler():
         return redirect(url_for("signout.register"))
     
     if not 3 <= len(schoolname) <= 64:
-        flash("School name must be between 3 and 64 characters", "error")
+        flash("School name must be between 3 and 64 characters", "neg")
         return redirect(url_for("signout.register"))
     
     if not 3 <= len(username) <= 16:
-        flash("Username must be between 3 and 16 characters", "error")
+        flash("Username must be between 3 and 16 characters", "neg")
         return redirect(url_for("signout.register"))
     
     if not 8 <= len(password) <= 64:
-        flash("Password must be between 8 and 64 characters", "error")
+        flash("Password must be between 8 and 64 characters", "neg")
         return redirect(url_for("signout.register"))
 
     for char in email:
         if char not in ALLOWED_EMAIL:
-            flash("Email contains invalid characters", "error")
+            flash("Email contains invalid characters", "neg")
             return redirect(url_for("signout.register"))
 
     for char in username:
         if char not in ALLOWED_USERNAME:
-            flash("Username can only be a-z, 0-9, - and _,", "error")
+            flash("Username can only be a-z, 0-9, - and _,", "neg")
             return redirect(url_for("signout.register"))
 
     if confirm_password != password:
-        flash("Passwords do not match!", "error")
+        flash("Passwords do not match!", "neg")
         return redirect(url_for("signout.register"))
 
     else:
+        start_config = json.dumps(DEFAULT_SETTINGS)
+
         try:
             g.cur.execute(
-                "INSERT INTO users (email, schoolname, username, password_hash) VALUES (?, ?, ?, ?)",
-                (email, schoolname, username, generate_password_hash(password))
+                "INSERT INTO users (email, schoolname, username, password_hash, config) VALUES (?, ?, ?, ?, ?)",
+                (email, schoolname, username, generate_password_hash(password), start_config)
             )
 
         except sqlite3.IntegrityError:
-            flash("An account with that username, school name, or email already exists.", "error")
+            flash("An account with that username, school name, or email already exists.", "neg")
             return redirect(url_for("signout.register"))
 
         else:
-            flash(f"Account {username} successfully created. You can now login.", "success")
+            flash(f"Account {username} successfully created. You can now login.", "pos")
             return redirect(url_for("signout.login"))
 
 # login view
@@ -143,29 +155,41 @@ def login_handler():
     ident_type = "email" if "@" in identifier else "username"
 
     user = g.cur.execute(
-        f"SELECT id, password_hash, username FROM users WHERE {ident_type} = ?", (identifier,)
+        f"SELECT id, password_hash, username, config FROM users WHERE {ident_type} = ?", (identifier,)
     ).fetchone()
 
     if user:
         if check_password_hash(user[1], password):
+            # fix broken config in SQL
+            settings = json.loads(user[3])
+            for key in DEFAULT_SETTINGS:
+                if key not in user[3]:
+                    settings[key] = DEFAULT_SETTINGS[key]
+            if settings != user[3]:
+                config = json.dumps(settings)
+                g.cur.execute(
+                    "UPDATE users SET config = ? WHERE id = ?",
+                    (config, user[0])
+                )
+        
             session.clear()
             session["user_id"] = user[0]
-            flash(f"Successfully logged in as {user[2]}!", "success")
+            flash(f"Successfully logged in as {user[2]}!", "pos")
             return redirect(url_for("signout.panel"))
 
         else:
-            flash("Incorrect password!", "error")
+            flash("Incorrect password!", "neg")
             return redirect(url_for("signout.login"))
 
     else:
-        flash("That account doesn't exist!", "error")
+        flash("That account doesn't exist!", "neg")
         return redirect(url_for("signout.login"))
 
 # logout redirect
 @signout.route("/logout")
 def logout():
     session.clear()
-    flash("You have been logged out!", "success")
+    flash("You have been logged out!", "pos")
     return redirect(url_for("signout.home"))
 
 # panel with settings, monitor, student view, and logout
@@ -236,6 +260,8 @@ def apply_settings():
     remove_location = request.form.get("remove-location")
     add_location = request.form.get("add-location")
     add_location_time = request.form.get("add-location-time")
+    set_other = request.form.get("set-other")
+    set_leave = request.form.get("set-leave")
 
     # apply settings
 
@@ -245,6 +271,16 @@ def apply_settings():
     if add_location and add_location_time:
         user_settings["locations"][add_location] = add_location_time
 
+    if set_other == "0":
+        user_settings["allow_other"] = False
+    elif set_other == "1":
+        user_settings["allow_other"] = True
+
+    if set_leave == "0":
+        user_settings["allow_leave"] = False
+    elif set_leave == "1":
+        user_settings["allow_leave"] = True
+
     # put user settings back in database
     user_settings = json.dumps(user_settings)
     g.cur.execute(
@@ -252,7 +288,7 @@ def apply_settings():
         (user_settings, session["user_id"])
     )
 
-    flash("Applied changes!", "success")
+    flash("Applied changes!", "pos")
     return redirect(url_for("signout.settings"))
 
 # monitor student signouts
@@ -266,7 +302,7 @@ def monitor():
 @signout.route("/panel/lock")
 def student_lock():
     if error := check_user(): return user_error(error)
-    flash("The panel has been locked in student mode", "message")
+    flash("The panel has been locked in student mode", "inf")
     session["student_lock"] = True
     
     return redirect(url_for("signout.student"))
@@ -299,7 +335,7 @@ def sign():
     dismiss = request.form.get("dismiss")
 
     if not (student_id and destination):
-        flash("Not enough parameters", "error")
+        flash("Not enough parameters", "neg")
         return redirect(url_for("signout.student"))
     
     if destination == "return":

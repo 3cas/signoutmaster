@@ -67,19 +67,19 @@ noscript span {
     margin: 5px 0px;
 }
 
-.error {
+.neg {
     border-color: red;
     background-color: pink;
     color: red;
 }
 
-.success {
+.pos {
     border-color: green;
     background-color: lightgreen;
     color: green;
 }
 
-.message {
+.inf {
     border-color: dodgerblue;
     background-color: paleturquoise;
     color: dodgerblue;
@@ -148,4 +148,11 @@ noscript span {
     align-items: center;
     display: flex;
     flex-direction: row;
+}
+
+.required {
+    width: fit-content;
+    background-color: pink;
+    color: red;
+    font-style: italic;
 }
