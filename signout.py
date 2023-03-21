@@ -22,28 +22,61 @@ DEFAULT_SETTINGS = {
     "allow_leave": True
 }
 
+# NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
+# configuration is initialized at account creation, and onboard is only enabled if 
+# those settings are deleted or corrupted
+
 def now(): return int(datetime.timestamp(datetime.utcnow()))
 # datetime.fromtimestamp(timestamp).strftime("%m/%d/%y(%a)%H:%M:%S")
 
 # function that checks if a user is logged in
-def check_user(can_view_as_student: bool = False):
+# student: set to true when you want to allow student access, otherwise student lock denies access
+# onboard: set to true when you want to allow new account access, otherwise redirects to settings
+def check_user(*, student: bool = False, onboard: bool = False):
     LOGIN_ERROR = ["You must be logged in!", "signout.login"]
     STUDENT_MODE = ["This device is locked to student mode", "signout.student"]
+    ONBOARD_NEEDED = ["In order to access the panel and use the service, you must set settings first!", "signout.settings"]
 
+    # deny access if not logged in
     if "user_id" not in session or not session["user_id"]:
         return LOGIN_ERROR
     
-    user = g.cur.execute(
-        "SELECT username FROM users WHERE id = ?",
+    config = g.cur.execute(
+        "SELECT config FROM users WHERE id = ?",
         (session["user_id"],)
-    ).fetchone()
+    ).fetchone()[0]
 
-    if not user:
+    # check if any result from SQL query
+    if not config:
         session.clear()
         return LOGIN_ERROR
 
-    if not can_view_as_student and "student_lock" in session and session["student_lock"]:
+    # deny access if locked in student mode
+    if not student and "student_lock" in session and session["student_lock"]:
         return STUDENT_MODE
+    
+    # now we check settings to see if the service can be used
+    try:
+        # check if dict in config column
+        settings = json.loads(config)
+    except:
+        # no dict in config column, setting to empty dict
+        settings = {}
+        session["onboard"] = True
+    else:
+        # dict was in config column, check dict contents
+        # VALIDATE SETTINGS HERE
+        if not (
+            "locations" in settings and 
+            len(settings["locations"]) > 0
+        ):
+            session["onboard"] = True
+        else:
+            session["onboard"] = False
+
+    # deny access to those who need settings ('onboard')
+    if (not onboard) and session["onboard"]:
+        return ONBOARD_NEEDED
 
     return None
 
@@ -175,7 +208,7 @@ def login_handler():
             session.clear()
             session["user_id"] = user[0]
             flash(f"Successfully logged in as {user[2]}!", "pos")
-            return redirect(url_for("signout.panel"))
+            return redirect(url_for("signout.monitor"))
 
         else:
             flash("Incorrect password!", "neg")
@@ -192,45 +225,13 @@ def logout():
     flash("You have been logged out!", "pos")
     return redirect(url_for("signout.home"))
 
-# panel with settings, monitor, student view, and logout
-@signout.route("/panel")
-def panel():
-    if error := check_user(): return user_error(error)
-
-    user = g.cur.execute(
-        "SELECT username, schoolname, config FROM users WHERE id = ?",
-        (session["user_id"],)
-    ).fetchone()
-    
-    username = user[0]
-    schoolname = user[1]
-    settings = user[2]
-
-    try:
-        settings = json.loads(settings)
-    except:
-        settings = {}
-        onboard = True
-    else:
-        if not (
-            "locations" in settings and 
-            len(settings["locations"]) > 0
-        ):
-            onboard = True
-        else:
-            onboard = False
-
-    return render_template("panel.html", username=username, schoolname=schoolname, onboard=onboard)
-
-# onboarding settings (?)
-@signout.route("/panel/onboarding")
-def onboarding():
-    return render_template("onboarding.html")
+# /panel route has been removed, it was going to be a hub
+# now navigation is handled via topbar and tabbed.html, new logins shown welcome.html
 
 # settings page
-@signout.route("/panel/settings")
+@signout.route("/settings")
 def settings():
-    if error := check_user(): return user_error(error)
+    if error := check_user(onboard=True): return user_error(error)
 
     user_settings = g.cur.execute(
         "SELECT config FROM users WHERE id = ?",
@@ -241,9 +242,9 @@ def settings():
     return render_template("settings.html", settings=user_settings)
 
 # apply settings backend
-@signout.route("/panel/settings/apply", methods=["POST"])
+@signout.route("/settings/handler", methods=["POST"])
 def apply_settings():
-    if error := check_user(): return user_error(error)
+    if error := check_user(onboard=True): return user_error(error)
 
     # get dictionary of user settings
     user_settings = g.cur.execute(
@@ -292,14 +293,14 @@ def apply_settings():
     return redirect(url_for("signout.settings"))
 
 # monitor student signouts
-@signout.route("/panel/monitor")
+@signout.route("/monitor")
 def monitor():
     if error := check_user(): return user_error(error)
 
     return render_template("monitor.html")
 
 # lock panel in student mode
-@signout.route("/panel/lock")
+@signout.route("/lock")
 def student_lock():
     if error := check_user(): return user_error(error)
     flash("The panel has been locked in student mode", "inf")
@@ -308,9 +309,9 @@ def student_lock():
     return redirect(url_for("signout.student"))
 
 # student view of panel, must re-login to be admin
-@signout.route("/panel/student")
+@signout.route("/student")
 def student():
-    if error := check_user(True): return user_error(error)
+    if error := check_user(student=True): return user_error(error)
 
     user = g.cur.execute(
         "SELECT schoolname, config FROM users WHERE id = ?",
@@ -325,9 +326,9 @@ def student():
     return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
 
 # student panel signout or in backend
-@signout.route("/panel/student/sign", methods=["POST"])
+@signout.route("/student/handler", methods=["POST"])
 def sign():
-    if error := check_user(True): return user_error(error)
+    if error := check_user(student=True): return user_error(error)
 
     student_id = request.form.get("id")
     destination = request.form.get("destination")

@@ -1,78 +1,80 @@
-{% extends "center.html" %}
+{% extends "tabbed.html" %}
+
+{% block navbar %}
+    {{ nav("settings") }}
+{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <a class="button" href="{{ url_for('signout.panel') }}">back</a>
-        <h1>Settings</h1>
-        <i>Settings are saved automatically.</i>
+    <h1>Settings</h1>
+    <i>Settings are saved as soon as they are changed.</i>
+    {{ get_flashes() }}
 
-        <h2>Edit Locations</h2>
-        {% if not settings["locations"] %}
-            <span class="required">* You must have at least one location available to use the service.</span>
+    <h2>Edit Destinations</h2>
+    {% if not settings["locations"] %}
+        <span class="required">Warning: You must have at least one signout destination available to use the service.</span>
+    {% endif %}
+    <table>
+        <tr>
+            <th>Location Name</th>
+            <th>Max time (mins)</th>
+            <td></td>
+        </tr>
+        <tr>
+            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                <td><input type="text" name="add-location" placeholder="Add location..." size="15" maxlength="64" required></td>
+                <td><input type="text" name="add-location-time" placeholder="Max time" size="5" maxlength="3" required></td>
+                <td><input type="submit" value="&#x2795;"></td>
+            </form>
+        </tr>
+        {% if settings["locations"] %}
+            {% for location in settings["locations"] %}
+                <tr>
+                    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                        <td><span>{{ location }}</span></td>
+                        <td><span>{{ settings["locations"][location] }}</span></td>
+                        <input type="text" name="remove-location" value="{{ location }}" hidden>
+                        <td><input type="submit" value="&#x2716;"></td>
+                    </form>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="3"><i>No locations yet!</i></td></tr>
         {% endif %}
-        <table>
-            <tr>
-                <th>Location Name</th>
-                <th>Max time (mins)</th>
-                <td></td>
-            </tr>
-            <tr>
-                <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                    <td><input type="text" name="add-location" placeholder="Add location..." size="15" maxlength="64" required></td>
-                    <td><input type="text" name="add-location-time" placeholder="Max time" size="5" maxlength="3" required></td>
-                    <td><input type="submit" value="&#x2795;"></td>
-                </form>
-            </tr>
-            {% if settings["locations"] %}
-                {% for location in settings["locations"] %}
-                    <tr>
-                        <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                            <td><span>{{ location }}</span></td>
-                            <td><span>{{ settings["locations"][location] }}</span></td>
-                            <input type="text" name="remove-location" value="{{ location }}" hidden>
-                            <td><input type="submit" value="&#x2716;"></td>
-                        </form>
-                    </tr>
-                {% endfor %}
+    </table>
+    <table>
+        <tr>
+            <td>Allow "other"</td>
+            {% if settings["allow_other"] %}
+                {% set submit = "0" %}
+                {% set class = "pos" %}
+                {% set value = "yes" %}
             {% else %}
-                <tr><td colspan="3"><i>No locations yet!</i></td></tr>
+                {% set submit = "1" %}
+                {% set class = "neg" %}
+                {% set value = "no" %}
             {% endif %}
-        </table>
-        <table>
-            <tr>
-                <td>Allow "other"</td>
-                {% if settings["allow_other"] %}
-                    {% set submit = "0" %}
-                    {% set class = "pos" %}
-                    {% set value = "yes" %}
-                {% else %}
-                    {% set submit = "1" %}
-                    {% set class = "neg" %}
-                    {% set value = "no" %}
-                {% endif %}
-                <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                    <input type="text" name="set-other" value="{{ submit }}" hidden>
-                    <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
-                </form>
-            </tr>
-            <tr>
-                <td>Allow leaving</td>
-                {% if settings["allow_leave"] %}
-                    {% set submit = "0" %}
-                    {% set class = "pos" %}
-                    {% set value = "yes" %}
-                {% else %}
-                    {% set submit = "1" %}
-                    {% set class = "neg" %}
-                    {% set value = "no" %}
-                {% endif %}
-                <form method="post" action="{{ url_for('signout.apply_settings') }}">
-                    <input type="text" name="set-leave" value="{{ submit }}" hidden>
-                    <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
-                </form>
-            </tr>
-        </table>
+            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                <input type="text" name="set-other" value="{{ submit }}" hidden>
+                <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
+            </form>
+        </tr>
+        <tr>
+            <td>Allow leaving</td>
+            {% if settings["allow_leave"] %}
+                {% set submit = "0" %}
+                {% set class = "pos" %}
+                {% set value = "yes" %}
+            {% else %}
+                {% set submit = "1" %}
+                {% set class = "neg" %}
+                {% set value = "no" %}
+            {% endif %}
+            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                <input type="text" name="set-leave" value="{{ submit }}" hidden>
+                <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
+            </form>
+        </tr>
+    </table>
 
-        <h2></h2>
-    </div>
+    <h2></h2>
 {% endblock %}

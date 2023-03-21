@@ -24,6 +24,8 @@ function delete_flash(button) {
     button.parentElement.remove()
 }
 
+// function auto_delete()
+
 function check_fields() {
     let feedback_email = document.getElementById("feedback-email")
     let feedback_username = document.getElementById("feedback-username")

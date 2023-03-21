@@ -10,7 +10,7 @@
         <ul>
             {% if username %}
                 <li>Logged in as {{ username }}</li>
-                <li><a href="{{ url_for('signout.panel') }}">Panel</a></li>
+                <li><a href="{{ url_for('signout.monitor') }}">Monitor</a></li>
                 <li><a href="{{ url_for('signout.logout') }}">Log out</a></li>
             {% else %}
                 <li><a href="{{ url_for('signout.login') }}">Login</a></li>

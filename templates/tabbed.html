@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% macro nav(selected) %}
+    {% for name in ["monitor", "settings", "student", "logout"] %}
+        {% if name == selected %}
+            <a href="{{ url_for('signout.' + name) }}" class="nolink active">{{ name }}</a>
+        {% else %}
+            <a href="{{ url_for('signout.' + name) }}">{{ name }}</a>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro navback(name) %}
+    <a href="{{ url_for('signout.' + name) }}" class="single">return to {{ name }} page</a>
+{% endmacro %}
+
+{% block body %}
+    <div class="wrapper">
+        <div class="main fillheight">
+            <div class="headbox">
+                <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="logo" title="spinning thing">
+                <span>login status</span>
+            </div>
+            <div class="topnav">
+                {% block navbar %}
+                    {{ nav("") }}
+                {% endblock %}
+            </div>
+            <div class="box">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
