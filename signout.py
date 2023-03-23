@@ -405,18 +405,41 @@ def student():
 # student panel signout or in backend
 @signout.route("/student/handler", methods=["POST"])
 def student_handler():
-    if error := check_user(student=True): return user_error(error)
-
     student_id = request.form.get("id")
     destination = request.form.get("destination")
     other = request.form.get("other")
     dismiss = request.form.get("dismiss")
     monitor = request.form.get("monitor")
+    remote_key = request.form.get("remote_key")
 
-    if monitor and monitor == "1" and not check_user():
-        redir = redirect(url_for("signout.monitor"))
+    if remote_key:
+        school_id = g.cur.execute(
+            "SELECT id FROM users WHERE config LIKE ?",
+            (f'%"remote_url": "{remote_key}"%',)
+        ).fetchone()[0]
+
+        if school_id:
+            skip_check = True
+            monitor = False
+
+        else:
+            skip_check = False
+
     else:
-        redir = redirect(url_for("signout.student"))
+        skip_check = False
+
+    if not skip_check:
+        if error := check_user(student=True): return user_error(error)
+        school_id = session["user_id"]
+
+    if monitor == "1" and not check_user():
+        redir = url_for("signout.monitor")
+    elif remote_key:
+        redir = url_for("signout.remote_link", key=remote_key)
+    else:
+        redir = url_for("signout.student")
+
+    redir = redirect(redir)
 
     if not (student_id and destination):
         flash("Not enough parameters", "neg")
@@ -426,7 +449,7 @@ def student_handler():
         try:
             g.cur.execute(
                 "UPDATE signouts SET time_in = ? WHERE school_id = ? AND student_id = ?",
-                (now(), session["user_id"], student_id)
+                (now(), school_id, student_id)
             )
         
         except:
@@ -471,9 +494,28 @@ def clear_signouts():
     return redirect(url_for("signout.monitor"))
 
 # unimplemented share link feature
-@signout.route("/remote/<remote_key>")
-def student_public(remote_key):
-    return "student panel public share link"
+@signout.route("/remote/<key>")
+def remote_link(key):
+    #TODO: check key with query and if its valid render the signout template
+
+    user = g.cur.execute(
+        "SELECT schoolname, config FROM users WHERE config LIKE ?",
+        (f'%"remote_url": "{key}"%',)
+    ).fetchone()[0]
+
+    if user:
+        settings = json.loads(user[1])
+
+        return render_template(
+            "student.html", 
+            schoolname=user[0], 
+            time=now(), 
+            settings=settings,
+            remote_key=key,
+        )
+    
+    else:
+        return "The link you followed was invalid!"
 
 # wip username/email/etc taken checker
 @signout.route("/check")

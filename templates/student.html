@@ -10,6 +10,9 @@
     </div>
     <div class="col niceborder">
         <form action="{{ url_for('signout.student_handler') }}" method="post" autocomplete="off">
+            {% if remote_key %}
+                <input type="text" name="remote_key" value="{{ remote_key }}" hidden>
+            {% endif %}
             <table>
                 <tr>
                     <td><label for="id">ID:</label></td>

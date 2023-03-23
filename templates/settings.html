@@ -10,6 +10,7 @@
     {{ get_flashes() }}
 
     <h2>Edit Destinations</h2>
+    <p>Here you can set the destinations that your students can select when signing out of class.</p>
     {% if not settings["locations"] %}
         <span class="required">Warning: You must have at least one signout destination available to use the service.</span>
     {% endif %}
@@ -76,6 +77,27 @@
         </tr>
     </table>
 
-    <h2>Remote Access Links</h2>
-    
+    <h2>Remote Access Link</h2>
+    <p>This feature allows you to generate a randomized link which allows access to the student signout panel.</p>
+    <span>Status:</span>
+    {% if settings["remote_on"] %}
+        <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <input type="text" name="set-remote" value="0" hidden>
+            <input type="submit" class="pos" value="enabled">
+        </form>
+        <span>|</span>
+        <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <input type="text" name="regen-link" value="1" hidden>
+            <input type="submit" value="Regenerate Link">
+        </form>
+        <br>
+        <span>Your URL:</span>
+        {% set link = url_for("signout.remote_link", key=settings["remote_url"]) %}
+        <a href="{{ link }}">{{ link }}</a>
+    {% else %}
+        <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <input type="text" name="set-remote" value="1" hidden>
+            <input type="submit" class="neg" value="disabled">
+        </form>
+    {% endif %}
 {% endblock %}
