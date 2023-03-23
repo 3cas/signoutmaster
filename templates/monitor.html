@@ -8,6 +8,7 @@
     <div class="center ct">
         <p class="title">Monitor Mode</p>
     </div>
+    {{ get_flashes() }}
     <div class="center">
         <div class="col niceborder">
             <h2>Currently signed out</h2>
@@ -22,7 +23,7 @@
                         <th>Return student</th>
                     </tr>
                     {% for signout in current_signouts %}
-                        {% if time - signout[4] > settings["locations"][signout[3]] %}
+                        {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
                             {% set flagged = True %}
                             {% set color = "red" %}
                         {% else %}
@@ -40,9 +41,9 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <form method="post" action="{{ url_for('signout.sign') }}">
+                                <form method="post" action="{{ url_for('signout.student_handler') }}">
                                     <input type="text" name="id" value="{{ signout[2] }}" hidden>
-                                    <input type="text" name="destination" value="{{ signout[3] }}" hidden>
+                                    <input type="text" name="destination" value="return" hidden>
                                     <input type="text" name="monitor" value="1" hidden>
                                     <input type="submit" value="Return">
                                 </form>
@@ -64,7 +65,7 @@
                         <th>Total time</th>
                     </tr>
                     {% for signout in past_signouts %}
-                        {% if time - signout[4] > settings["locations"][signout[3]] %}
+                        {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
                             {% set flagged = True %}
                             {% set color = "red" %}
                         {% else %}
@@ -83,6 +84,7 @@
             {% else %}
                 <p>No past signouts have occurred.</p>
             {% endif %}
+            <a href="{{ url_for('signout.clear_signouts') }}">do NOT click this! (clear all)</a>
         </div>
     </div>
 {% endblock %}

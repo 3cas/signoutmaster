@@ -13,5 +13,6 @@ CREATE TABLE signouts (
     student_id TEXT NOT NULL,
     location TEXT NOT NULL,
     time_out INTEGER NOT NULL,
-    time_in INTEGER
+    time_in INTEGER,
+    FOREIGN KEY (school_id) REFERENCES users(id)
 );

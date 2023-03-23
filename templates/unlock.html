@@ -1,0 +1,17 @@
+{% extends "center.html" %}
+
+{% block title %}Unlock Panel{% endblock %}
+
+{% block content %}
+    {{ get_flashes() }}
+    <div class="login-box">
+        <h2>Unlock</h2>
+        <p>Enter the account password to unlock this panel.</p>
+        <form method="post" action="{{ url_for('signout.unlock_handler') }}">
+            <input type="password" name="password" placeholder="password" required>
+            <br>
+            <input type="submit" value="Unlock">
+        </form>
+    </div>
+    <a href="{{ url_for('signout.student') }}">back to panel</a>
+{% endblock %}

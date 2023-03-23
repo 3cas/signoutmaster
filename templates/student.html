@@ -9,7 +9,7 @@
         </div>
     </div>
     <div class="col niceborder">
-        <form action="{{ url_for('signout.sign') }}" method="post" autocomplete="off">
+        <form action="{{ url_for('signout.student_handler') }}" method="post" autocomplete="off">
             <table>
                 <tr>
                     <td><label for="id">ID:</label></td>
@@ -22,14 +22,12 @@
                         <label for="return">Sign back in</label>
                     </td>
                 </tr>
-                {% set locations = settings["locations"] %}
-                {% for location_group in locations %}
-                    {% set option = location_group[0] %}
+                {% for location_name in settings["locations"] %}
                     <tr>
                         <td></td>
                         <td>
-                            <input type="radio" name="destination" id="option-{{ option }}" value="{{ option }}">
-                            <label for="{{ option }}">{{ option }}</label>
+                            <input type="radio" name="destination" id="option-{{ location_name }}" value="{{ location_name }}">
+                            <label for="{{ location_name }}">{{ location_name }}</label>
                         </td>
                     </tr>
                 {% endfor %}
@@ -57,6 +55,10 @@
     <div class="col ct">
         {{ get_flashes() }}
         <br>
-        <a href="{{ url_for('signout.logout') }}">disable panel</a>
+        {% if session["student_lock"] %}
+            <a href="{{ url_for('signout.unlock') }}">Unlock panel</a>
+        {% else %}
+            <a href="{{ url_for('signout.monitor') }}">Monitor mode</a>
+        {% endif %}
     </div>
 {% endblock %}

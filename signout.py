@@ -19,7 +19,9 @@ DEFAULT_SETTINGS = {
         "office": 15
     },
     "allow_other": True,
-    "allow_leave": True
+    "allow_leave": True,
+    "remote_on": False,
+    "remote_url": None,
 }
 
 # NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
@@ -270,7 +272,13 @@ def apply_settings():
         del user_settings["locations"][remove_location]
     
     if add_location and add_location_time:
-        user_settings["locations"][add_location] = add_location_time
+        try:
+            add_time = int(add_location_time)
+        except ValueError:
+            flash("You must supply integer times", "neg")
+            return redirect(url_for("signout.settings"))
+        else:
+            user_settings["locations"][add_location] = add_time
 
     if set_other == "0":
         user_settings["allow_other"] = False
@@ -297,7 +305,40 @@ def apply_settings():
 def monitor():
     if error := check_user(): return user_error(error)
 
-    return render_template("monitor.html")
+    config = g.cur.execute(
+        "SELECT config FROM users WHERE id = ?",
+        (session["user_id"],)
+    ).fetchone()[0]
+    settings = json.loads(config)
+
+    try:
+        signouts = g.cur.execute(
+            "SELECT * FROM signouts WHERE school_id = ?",
+            (session["user_id"],)
+        ).fetchall()
+
+    except:
+        flash("Something went wrong when querying the database")
+        curr = None
+        past = None
+    
+    else:
+        curr = []
+        past = []
+
+        for signout in signouts:
+            if signout[5]:
+                past.append(signout)
+            else:
+                curr.append(signout)
+
+    return render_template(
+        "monitor.html",
+        settings=settings,
+        time=now(),
+        current_signouts=curr,
+        past_signouts=past
+    )
 
 # lock panel in student mode
 @signout.route("/lock")
@@ -307,6 +348,37 @@ def student_lock():
     session["student_lock"] = True
     
     return redirect(url_for("signout.student"))
+
+@signout.route("/unlock")
+def unlock():
+    if error := check_user(student=True, onboard=True): return user_error(error)
+    if "student_lock" not in session or session["student_lock"] == False:
+        flash("The panel was already unlocked", "inf")
+        return redirect(url_for("signout.monitor"))
+    
+    return render_template("unlock.html")
+
+@signout.route("/unlock/handler", methods=["POST"])
+def unlock_handler():
+    if error := check_user(student=True, onboard=True): return user_error(error)
+    
+    password = request.form.get("password")
+    if not password:
+        flash("Password is required", "neg")
+        return redirect(url_for("signout.unlock"))
+    
+    password_hash = g.cur.execute(
+        f"SELECT password_hash FROM users WHERE id = ?", 
+        (session["user_id"],)
+    ).fetchone()[0]
+
+    if check_password_hash(password_hash, password):
+        session["student_lock"] = False
+        flash("Unlocked the panel", "pos")
+        return redirect(url_for("signout.monitor"))
+
+    flash("Incorrect password", "neg")
+    return redirect(url_for("signout.unlock"))
 
 # student view of panel, must re-login to be admin
 @signout.route("/student")
@@ -323,36 +395,84 @@ def student():
 
     time = datetime.utcnow().strftime("%-I:%M %p")
 
-    return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
+    return render_template(
+        "student.html", 
+        schoolname=schoolname, 
+        time=time, 
+        settings=settings
+    )
 
 # student panel signout or in backend
 @signout.route("/student/handler", methods=["POST"])
-def sign():
+def student_handler():
     if error := check_user(student=True): return user_error(error)
 
     student_id = request.form.get("id")
     destination = request.form.get("destination")
     other = request.form.get("other")
     dismiss = request.form.get("dismiss")
+    monitor = request.form.get("monitor")
+
+    if monitor and monitor == "1" and not check_user():
+        redir = redirect(url_for("signout.monitor"))
+    else:
+        redir = redirect(url_for("signout.student"))
 
     if not (student_id and destination):
         flash("Not enough parameters", "neg")
-        return redirect(url_for("signout.student"))
+        return redir
     
     if destination == "return":
+        try:
+            g.cur.execute(
+                "UPDATE signouts SET time_in = ? WHERE school_id = ? AND student_id = ?",
+                (now(), session["user_id"], student_id)
+            )
         
+        except:
+            flash(f"{student_id}: You were not signed out", "neg")
+        else:
+            flash(f"{student_id}: You have been signed back in", "pos")
         
-        return redirect(url_for("signout.student"))
+        return redir
 
     if destination == "other":
         if other:
             destination = other
 
-    return "signing out or in"
+    try:
+        g.cur.execute(
+            "INSERT INTO signouts (school_id, student_id, location, time_out) VALUES (?, ?, ?, ?)",
+            (session["user_id"], student_id, destination, now())
+        )
+    
+    except:
+        flash(f"{student_id}: Something went wrong", "neg")
+    else:
+        flash(f"{student_id}: You have signed out to {destination}", "pos")
+
+    return redir
+
+@signout.route("/clearall")
+def clear_signouts():
+    if error := check_user(): return user_error(error)
+
+    try:
+        g.cur.execute(
+            "DELETE FROM signouts WHERE school_id = ?",
+            (session["user_id"],)
+        )
+    
+    except:
+        flash("Something went wrong lol", "neg")
+    else:
+        flash("Something went RIGHT!", "pos")
+
+    return redirect(url_for("signout.monitor"))
 
 # unimplemented share link feature
-@signout.route("/share/<public_id>")
-def student_public(public_id):
+@signout.route("/remote/<remote_key>")
+def student_public(remote_key):
     return "student panel public share link"
 
 # wip username/email/etc taken checker
