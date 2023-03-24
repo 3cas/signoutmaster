@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import sqlite3
 from datetime import datetime
 import json
+import random
 
 import tools
 import setup
@@ -90,6 +91,13 @@ def user_error(error: list):
 # the following code checks if a user can view the page and returns the proper error if not
 # assignment operator checks if there is an error and assigns any error to the error variable
 # if error := check_user(): return user_error(error)
+
+# used to generate remote access links
+def gen_remote():
+    key = ""
+    for i in range(64):
+        key += random.choice(ALLOWED_USERNAME)
+    return key
 
 # connect to database before every request
 @signout.before_request
@@ -265,6 +273,8 @@ def apply_settings():
     add_location_time = request.form.get("add-location-time")
     set_other = request.form.get("set-other")
     set_leave = request.form.get("set-leave")
+    set_remote = request.form.get("set-remote")
+    regen_remote = request.form.get("regen-link")
 
     # apply settings
 
@@ -289,6 +299,16 @@ def apply_settings():
         user_settings["allow_leave"] = False
     elif set_leave == "1":
         user_settings["allow_leave"] = True
+
+    if set_remote == "1":
+        user_settings["remote_on"] = True
+        if not user_settings["remote_url"]:
+            user_settings["remote_url"] = gen_remote()
+    elif set_remote == "0":
+        user_settings["remote_on"] = False
+
+    if regen_remote == "1":
+        user_settings["remote_url"] = gen_remote()
 
     # put user settings back in database
     user_settings = json.dumps(user_settings)
@@ -412,6 +432,11 @@ def student_handler():
     monitor = request.form.get("monitor")
     remote_key = request.form.get("remote_key")
 
+    if monitor == "1":
+        monitor = True
+    else:
+        monitor = False
+
     if remote_key:
         school_id = g.cur.execute(
             "SELECT id FROM users WHERE config LIKE ?",
@@ -432,7 +457,7 @@ def student_handler():
         if error := check_user(student=True): return user_error(error)
         school_id = session["user_id"]
 
-    if monitor == "1" and not check_user():
+    if monitor and not check_user():
         redir = url_for("signout.monitor")
     elif remote_key:
         redir = url_for("signout.remote_link", key=remote_key)
@@ -453,10 +478,20 @@ def student_handler():
             )
         
         except:
-            flash(f"{student_id}: You were not signed out", "neg")
+            if monitor:
+                message = f"Error! {student_id} was not signed out."
+            else:
+                f"{student_id}: Error! You were not signed out."
+            color = "neg"
+
         else:
-            flash(f"{student_id}: You have been signed back in", "pos")
-        
+            if monitor:
+                message = f"{student_id} has been signed back in."
+            else:
+                f"{student_id}: You have been signed back in."
+            color = "pos"
+
+        flash(message, color)        
         return redir
 
     if destination == "other":
@@ -466,14 +501,24 @@ def student_handler():
     try:
         g.cur.execute(
             "INSERT INTO signouts (school_id, student_id, location, time_out) VALUES (?, ?, ?, ?)",
-            (session["user_id"], student_id, destination, now())
+            (school_id, student_id, destination, now())
         )
     
     except:
-        flash(f"{student_id}: Something went wrong", "neg")
+        if monitor:
+            message = f"{student_id}: This is about the worst error you could ever get. Something has gone horrible awry."
+        else:
+            message = f"{student_id}: Sorry, something went wrong signing out."
+        color = "neg"
+    
     else:
-        flash(f"{student_id}: You have signed out to {destination}", "pos")
+        if monitor:
+            message = f"You weren't supposed to do that. Nonetheless, {student_id} has been signed out to {destination}..."
+        else:
+            message = f"{student_id}: You have signed out to {destination}"
+        color = "pos"
 
+    flash(message, color)
     return redir
 
 @signout.route("/clearall")
@@ -496,12 +541,10 @@ def clear_signouts():
 # unimplemented share link feature
 @signout.route("/remote/<key>")
 def remote_link(key):
-    #TODO: check key with query and if its valid render the signout template
-
     user = g.cur.execute(
         "SELECT schoolname, config FROM users WHERE config LIKE ?",
         (f'%"remote_url": "{key}"%',)
-    ).fetchone()[0]
+    ).fetchone()
 
     if user:
         settings = json.loads(user[1])
