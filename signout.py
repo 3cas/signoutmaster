@@ -582,7 +582,7 @@ def check_available():
     else:
         return "free"
 
-# commit and close database connection,  do not cache
+# commit and close database connection, do not cache
 @signout.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, post-check=0, pre-check=0"
