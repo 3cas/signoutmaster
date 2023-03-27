@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-import datetime
+from datetime import datetime
 
 import setup
 from signout import signout
