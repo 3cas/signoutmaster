@@ -11,7 +11,7 @@ import setup
 signout = Blueprint("signout", __name__)
 
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
-ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
+ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{.student_unlock}~@."
 
 DEFAULT_SETTINGS = {
     "locations": {
@@ -23,6 +23,8 @@ DEFAULT_SETTINGS = {
     "allow_leave": True,
     "remote_on": False,
     "remote_url": None,
+    "date_format": "%m/%d",
+    "time_format": "%I:%M %p"
 }
 
 # NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
@@ -275,6 +277,8 @@ def apply_settings():
     set_leave = request.form.get("set-leave")
     set_remote = request.form.get("set-remote")
     regen_remote = request.form.get("regen-link")
+    date_format = request.form.get("date-format")
+    time_format = request.form.get("time-format")
 
     # apply settings
 
@@ -309,6 +313,12 @@ def apply_settings():
 
     if regen_remote == "1":
         user_settings["remote_url"] = gen_remote()
+
+    if date_format:
+        user_settings["date_format"] = date_format
+    
+    if time_format:
+        user_settings["time_format"] = time_format
 
     # put user settings back in database
     user_settings = json.dumps(user_settings)
@@ -370,7 +380,7 @@ def student_lock():
     return redirect(url_for("signout.student"))
 
 @signout.route("/unlock")
-def unlock():
+def student_unlock():
     if error := check_user(student=True, onboard=True): return user_error(error)
     if "student_lock" not in session or session["student_lock"] == False:
         flash("The panel was already unlocked", "inf")
@@ -385,7 +395,7 @@ def unlock_handler():
     password = request.form.get("password")
     if not password:
         flash("Password is required", "neg")
-        return redirect(url_for("signout.unlock"))
+        return redirect(url_for("signout.student_unlock"))
     
     password_hash = g.cur.execute(
         f"SELECT password_hash FROM users WHERE id = ?", 
@@ -398,7 +408,7 @@ def unlock_handler():
         return redirect(url_for("signout.monitor"))
 
     flash("Incorrect password", "neg")
-    return redirect(url_for("signout.unlock"))
+    return redirect(url_for("signout.student_unlock"))
 
 # student view of panel, must re-login to be admin
 @signout.route("/student")
@@ -481,14 +491,14 @@ def student_handler():
             if monitor:
                 message = f"Error! {student_id} was not signed out."
             else:
-                f"{student_id}: Error! You were not signed out."
+                message = f"{student_id}: Error! You were not signed out."
             color = "neg"
 
         else:
             if monitor:
                 message = f"{student_id} has been signed back in."
             else:
-                f"{student_id}: You have been signed back in."
+                message = f"{student_id}: You have been signed back in."
             color = "pos"
 
         flash(message, color)        

@@ -5,86 +5,83 @@
 {% endblock %}
 
 {% block content %}
-    <div class="center ct">
-        <p class="title">Monitor Mode</p>
-    </div>
+    <h1>Monitor Mode</h1>
     {{ get_flashes() }}
-    <div class="center">
-        <div class="col niceborder">
-            <h2>Currently signed out</h2>
-            {% if current_signouts %}
-                <table class="bordered">
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Destination</th>
-                        <th>Time out</th>
-                        <th>Time since</th>
-                        <th><img src="{{ url_for('static', filename='flag_grayscale.png') }}" title="Flagged for being out too long"></th>
-                        <th>Return student</th>
-                    </tr>
-                    {% for signout in current_signouts %}
-                        {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
-                            {% set flagged = True %}
-                            {% set color = "red" %}
-                        {% else %}
-                            {% set flagged = False %}
-                            {% set color = "black" %}
+    <h2>Currently signed out</h2>
+    {% if current_signouts %}
+        <table class="bordered">
+            <tr>
+                <th>Student ID</th>
+                <th>Destination</th>
+                <th>Time out</th>
+                <th>Time since</th>
+                <th><img class="flag" src="{{ url_for('static', filename='flag_grayscale.png') }}" title="Flagged for being out too long"></th>
+                <th>Return student</th>
+            </tr>
+            {% for signout in current_signouts %}
+                {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
+                    {% set flagged = True %}
+                    {% set color = "red" %}
+                {% else %}
+                    {% set flagged = False %}
+                    {% set color = "black" %}
+                {% endif %}
+                <tr>
+                    <td>{{ signout[2] }}</td>
+                    <td>{{ signout[3] }}</td>
+                    <td>{{ signout[4]|time(settings["time_format"]) }}</td>
+                    <td style="color: {{ color }};">
+                        <span>{{ time - signout[4] }}</span>
+                    </td>
+                    <td>
+                        {% if flagged %}
+                            <img class="flag" alt="flagged" src="{{ url_for('static', filename='flag.png') }}">
                         {% endif %}
-                        <tr>
-                            <td>{{ signout[2] }}</td>
-                            <td>{{ signout[3] }}</td>
-                            <td>{{ signout[4] }}</td>
-                            <td style="color: {{ color }};">
-                                <span>{{ time - signout[4] }}</span>
-                                {% if flagged %}
-                                    <img src="{{ url_for('static', filename='flag.png') }}">
-                                {% endif %}
-                            </td>
-                            <td>
-                                <form method="post" action="{{ url_for('signout.student_handler') }}">
-                                    <input type="text" name="id" value="{{ signout[2] }}" hidden>
-                                    <input type="text" name="destination" value="return" hidden>
-                                    <input type="text" name="monitor" value="1" hidden>
-                                    <input type="submit" value="Return">
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <p>No one is currently signed out.</p>
-            {% endif %}
-            <h2>Past signouts</h2>
-            {% if past_signouts %}
-                <table class="bordered">
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Destination</th>
-                        <th>Time out</th>
-                        <th>Time in</th>
-                        <th>Total time</th>
-                    </tr>
-                    {% for signout in past_signouts %}
-                        {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
-                            {% set flagged = True %}
-                            {% set color = "red" %}
-                        {% else %}
-                            {% set flagged = False %}
-                            {% set color = "black" %}
-                        {% endif %}
-                        <tr>
-                            <td>{{ signout[2] }}</td>
-                            <td>{{ signout[3] }}</td>
-                            <td>{{ signout[4] }}</td>
-                            <td>{{ signout[5] }}</td>
-                            <td style="color: {{ color }};">{{ signout[5] - signout[4] }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>";
-            {% else %}
-                <p>No past signouts have occurred.</p>
-            {% endif %}
-            <a href="{{ url_for('signout.clear_signouts') }}">do NOT click this! (clear all)</a>
-        </div>
-    </div>
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('signout.student_handler') }}">
+                            <input type="text" name="id" value="{{ signout[2] }}" hidden>
+                            <input type="text" name="destination" value="return" hidden>
+                            <input type="text" name="monitor" value="1" hidden>
+                            <input type="submit" value="Return">
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No one is currently signed out.</p>
+    {% endif %}
+    <h2>Past signouts</h2>
+    {% if past_signouts %}
+        <table class="bordered">
+            <tr>
+                <th>Student ID</th>
+                <th>Destination</th>
+                <th>Time out</th>
+                <th>Time in</th>
+                <th>Total time</th>
+            </tr>
+            {% for signout in past_signouts %}
+                {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
+                    {% set flagged = True %}
+                    {% set color = "red" %}
+                {% else %}
+                    {% set flagged = False %}
+                    {% set color = "black" %}
+                {% endif %}
+                <tr>
+                    <td>{{ signout[2] }}</td>
+                    <td>{{ signout[3] }}</td>
+                    {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
+                    <td>{{ signout[4]|time(combo_format) }}</td>
+                    <td>{{ signout[5]|time(combo_format) }}</td>
+                    <td style="color: {{ color }};">{{ signout[5] - signout[4] }}</td>
+                </tr>
+            {% endfor %}
+        </table>";
+    {% else %}
+        <p>No past signouts have occurred.</p>
+    {% endif %}
+    <a href="{{ url_for('signout.clear_signouts') }}">do NOT click this! (clear all)</a>
 {% endblock %}

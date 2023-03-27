@@ -4,6 +4,11 @@
     }
 }
 
+@keyframes fade {
+    from {opacity: 100%;}
+    to {opacity: 0%;}
+}
+
 :root {
     font-family: 'Inter', sans-serif;
     --accent: cornflowerblue;
@@ -152,6 +157,11 @@ noscript span {
     flex-direction: row;
 }
 
+.align {
+    display: flex;
+    flex-direction: row;
+}
+
 .required {
     width: fit-content;
     background-color: pink;
@@ -219,3 +229,11 @@ noscript span {
     align-self: center;
 }
 
+.flag {
+    width: 16px;
+    height: 16px;
+}
+
+.fade {
+    animation: fade 5s ease-in;
+}

@@ -8,6 +8,9 @@
             <span class="accent">{{ time }}</span>
         </div>
     </div>
+    {% if not session["student_lock"] %}
+        <span>The panel is not locked <a href="{{ url_for('signout.student_lock') }}"><button>Lock</button></a></span>
+    {% endif %}
     <div class="col niceborder">
         <form action="{{ url_for('signout.student_handler') }}" method="post" autocomplete="off">
             {% if remote_key %}
@@ -59,7 +62,7 @@
         {{ get_flashes() }}
         <br>
         {% if session["student_lock"] %}
-            <a href="{{ url_for('signout.unlock') }}">Unlock panel</a>
+            <a href="{{ url_for('signout.student_unlock') }}">Unlock panel</a>
         {% else %}
             <a href="{{ url_for('signout.monitor') }}">Monitor mode</a>
         {% endif %}

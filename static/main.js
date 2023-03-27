@@ -15,7 +15,7 @@ function flash(message, category) {
     flashes_div.append(flash_div)
 }
 
-function delete_flash(button) {
+function deleteFlash(button) {
     let flash_message = button.parentElement.querySelector("span").value
     let index = flashes.indexOf(flash_message)
     if (index > -1) {
@@ -24,9 +24,13 @@ function delete_flash(button) {
     button.parentElement.remove()
 }
 
-// function auto_delete()
+function autoDelete(button) {
+    console.log("auto delete this!")
+    button.parentElement.classList.add("fade")
+    setTimeout(function() {deleteFlash(button)}, 5000)
+}
 
-function check_fields() {
+function checkFields() {
     let feedback_email = document.getElementById("feedback-email")
     let feedback_username = document.getElementById("feedback-username")
     let feedback_password_confirm = document.getElementById("feedback-password-confirm")
