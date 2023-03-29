@@ -1,25 +1,35 @@
 {% extends "center.html" %}
 
+{% block title %}Sign Out{% endblock %}
+
+{% block head %}
+    <script src="{{ url_for('static', filename='responsive.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="center ct">
         <div class="spacer"></div>
-        <h2 class="title">Signout</h2>
+        <h2 class="title">Sign Out</h2>
         <div class="spacer">
             <span class="accent">{{ time }}</span>
         </div>
     </div>
-    {% if not session["student_lock"] %}
-        <span>The panel is not locked <a href="{{ url_for('signout.student_lock') }}"><button>Lock</button></a></span>
-    {% endif %}
+    <div class="ct">
+        <h3>{{ schoolname }}</h3>
+        {% if not session["student_lock"] %}
+            <p>The panel is not locked <a href="{{ url_for('signout.student_lock') }}"><button>&#128274; Lock</button></a></p>
+        {% endif %}
+    </div>
+    
     <div class="col niceborder">
-        <form action="{{ url_for('signout.student_handler') }}" method="post" autocomplete="off">
+        <form name="signout" action="{{ url_for('signout.student_handler') }}" method="post" autocomplete="off">
             {% if remote_key %}
                 <input type="text" name="remote_key" value="{{ remote_key }}" hidden>
             {% endif %}
             <table>
                 <tr>
                     <td><label for="id">ID:</label></td>
-                    <td><input type="text" name="id" minlength="4" maxlength="8" required></td>
+                    <td><input type="text" name="id" minlength="{{ settings['id_min'] }}" maxlength="{{ settings['id_max'] }}" required autofocus></td>
                 </tr>
                 <tr>
                     <td><label for="destination">Destination:</label></td>

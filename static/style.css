@@ -5,8 +5,9 @@
 }
 
 @keyframes fade {
-    from {opacity: 100%;}
-    to {opacity: 0%;}
+    0% {opacity: 100%;}
+    65% {opacity: 100%;}
+    100% {opacity: 0%;}
 }
 
 :root {
@@ -251,5 +252,5 @@ noscript span {
 }
 
 .fade {
-    animation: fade 5s ease-in;
+    animation: fade 3s linear;
 }

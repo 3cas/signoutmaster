@@ -1,5 +1,7 @@
 {% extends "tabbed.html" %}
 
+{% block title%}Settings{% endblock %}
+
 {% block navbar %}
     {{ nav("settings") }}
 {% endblock %}
@@ -95,8 +97,9 @@
         </div>
         <br>
         <span>Your URL:</span>
+        {% set DOMAIN = "127.0.0.1:5000" %}
         {% set link = url_for("signout.remote_link", key=settings["remote_url"]) %}
-        <a href="{{ link }}">{{ link }}</a>
+        <a href="{{ link }}" target="_blank">https://{{ DOMAIN }}{{ link }}</a>
     {% else %}
         <div class="align">
             <span>Status:</span>
@@ -125,6 +128,7 @@
                 <option value="none" selected disabled hidden>Custom: {{ settings["date_format"] }}</option>
             {% endif %}
         </select>
+        <br>
         <label for="time-format">Time format:</label>
         <select name="time-format">
             {% set selected = false %}

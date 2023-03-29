@@ -2,6 +2,7 @@ const ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
 const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 var flashes = []
+var FLASH_TIMEOUT = 3
 
 function flash(message, category) {
     let flashes_div = document.getElementById("flashes")
@@ -24,10 +25,14 @@ function deleteFlash(button) {
     button.parentElement.remove()
 }
 
-function autoDelete(button) {
-    console.log("auto delete this!")
-    button.parentElement.classList.add("fade")
-    setTimeout(function() {deleteFlash(button)}, 5000)
+function fadeFlashes() {
+    let flashes_div = document.getElementById("flashes")
+    let flashes = flashes_div.children
+    for (let i = 0; i < flashes.length; i++) {
+        flashes[i].classList.add("fade")
+        let button = flashes[i].querySelector("button")
+        setTimeout(function() {deleteFlash(button)}, FLASH_TIMEOUT*1000)
+    }
 }
 
 function checkFields() {
@@ -97,3 +102,5 @@ function checkFields() {
         submit.disabled = false
     }
 }
+
+fadeFlashes()

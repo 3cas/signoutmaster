@@ -6,7 +6,7 @@
             {% endif %}
             <div class="flash {{ category }}">
                 <span>{{ message }}</span>
-                <button onclick="deleteFlash(this);" onload="autoDelete(this);">&#x2716;</button>
+                <button onclick="deleteFlash(this);">&#x2716;</button>
             </div>
         {% endfor %}
     </div>
@@ -31,7 +31,6 @@
     <meta content="Catchy slogan/description" property="og:description" />
     <meta content="{{ url_for('static', filename='logo.png') }}" property="og:image" />
     <meta content="." property="og:url" />
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -41,5 +40,6 @@
         </div>
     </noscript>
     {% block body %}{% endblock %}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

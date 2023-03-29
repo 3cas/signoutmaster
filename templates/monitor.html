@@ -1,11 +1,13 @@
 {% extends "tabbed.html" %}
 
+{% block title%}Monitor Students{% endblock %}
+
 {% block navbar %}
     {{ nav("monitor") }}
 {% endblock %}
 
 {% block content %}
-    <h1>Monitor Mode</h1>
+    <h1>Monitor Students</h1>
     {{ get_flashes() }}
     <h2>Currently signed out</h2>
     {% if current_signouts %}
@@ -83,5 +85,7 @@
     {% else %}
         <p>No past signouts have occurred.</p>
     {% endif %}
-    <a href="{{ url_for('signout.clear_signouts') }}">do NOT click this! (clear all)</a>
+    <a href="{{ url_for('signout.clear_signouts') }}">
+        <button class="neg">Clear all events</button>
+    </a>
 {% endblock %}

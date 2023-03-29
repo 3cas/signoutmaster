@@ -24,7 +24,9 @@ DEFAULT_SETTINGS = {
     "remote_on": False,
     "remote_url": None,
     "date_format": "%m/%d",
-    "time_format": "%I:%M %p"
+    "time_format": "%I:%M %p",
+    "id_min": 4,
+    "id_max": 8
 }
 
 # NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
@@ -279,6 +281,8 @@ def apply_settings():
     regen_remote = request.form.get("regen-link")
     date_format = request.form.get("date-format")
     time_format = request.form.get("time-format")
+    id_min = request.form.get("id-min")
+    id_max = request.form.get("id-max")
 
     # apply settings
 
@@ -319,6 +323,8 @@ def apply_settings():
     
     if time_format:
         user_settings["time_format"] = time_format
+
+    # TODO: add id min and max here and to settings.html
 
     # put user settings back in database
     user_settings = json.dumps(user_settings)
