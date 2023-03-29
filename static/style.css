@@ -40,14 +40,20 @@ noscript span {
     color: wheat;
 }
 
-table {
-    border: 2px solid --accent;
-    border-radius: 5px;
+.bordered {
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    border-collapse: collapse;
 }
 
-tr, td, th {
-    border: 1px solid --accent;
+.bordered td, .bordered th {
+    border: 1px solid var(--accent);
     border-collapse: collapse;
+    padding: 2px;
+}
+
+.bordered th {
+    border-bottom: 2px solid var(--accent);
 }
 
 .wrapper {
