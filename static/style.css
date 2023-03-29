@@ -40,6 +40,16 @@ noscript span {
     color: wheat;
 }
 
+table {
+    border: 2px solid --accent;
+    border-radius: 5px;
+}
+
+tr, td, th {
+    border: 1px solid --accent;
+    border-collapse: collapse;
+}
+
 .wrapper {
     display: flex;
     height: 100%;
