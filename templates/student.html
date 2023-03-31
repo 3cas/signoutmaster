@@ -16,8 +16,8 @@
     </div>
     <div class="ct">
         <h3>{{ schoolname }}</h3>
-        {% if not session["student_lock"] %}
-            <p>The panel is not locked <a href="{{ url_for('signout.student_lock') }}"><button>&#128274; Lock</button></a></p>
+        {% if not session["student_lock"] and not remote_key %}
+            <p>This session is not locked <a href="{{ url_for('signout.student_lock') }}"><button>&#128274; Lock</button></a></p>
         {% endif %}
     </div>
     
@@ -71,10 +71,12 @@
     <div class="col ct">
         {{ get_flashes() }}
         <br>
-        {% if session["student_lock"] %}
-            <a href="{{ url_for('signout.student_unlock') }}">Unlock panel</a>
-        {% else %}
-            <a href="{{ url_for('signout.monitor') }}">Monitor mode</a>
+        {% if not remote_key %}
+            {% if session["student_lock"] %}
+                <a href="{{ url_for('signout.student_unlock') }}">Unlock panel</a>
+            {% else %}
+                <a href="{{ url_for('signout.monitor') }}">Monitor mode</a>
+            {% endif %}
         {% endif %}
     </div>
 {% endblock %}

@@ -103,4 +103,12 @@ function checkFields() {
     }
 }
 
+function copyLink() {
+    let remoteLink = document.getElementById("remote-link")
+    let link = remoteLink.textContent
+    navigator.clipboard.writeText(link)
+    let message = document.createTextNode(" *copied!*")
+    remoteLink.appendChild(message)
+}
+
 fadeFlashes()
