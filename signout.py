@@ -368,13 +368,7 @@ def monitor():
             else:
                 curr.append(signout)
 
-    return render_template(
-        "monitor.html",
-        settings=settings,
-        time=now(),
-        current_signouts=curr,
-        past_signouts=past
-    )
+    return render_template("monitor.html", settings=settings, time=now(), current_signouts=curr, past_signouts=past)
 
 # lock panel in student mode
 @signout.route("/lock")
@@ -431,12 +425,7 @@ def student():
 
     time = datetime.utcnow().strftime("%-I:%M %p")
 
-    return render_template(
-        "student.html", 
-        schoolname=schoolname, 
-        time=time, 
-        settings=settings
-    )
+    return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
 
 # student panel signout or in backend
 @signout.route("/student/handler", methods=["POST"])
@@ -565,13 +554,7 @@ def remote_link(key):
     if user:
         settings = json.loads(user[1])
 
-        return render_template(
-            "student.html", 
-            schoolname=user[0], 
-            time=now(), 
-            settings=settings,
-            remote_key=key,
-        )
+        return render_template("student.html", schoolname=user[0], time=now(), settings=settings, remote_key=key)
     
     else:
         return "The link you followed was invalid!"
