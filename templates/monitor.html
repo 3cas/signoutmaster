@@ -21,7 +21,7 @@
                 <th>Return student</th>
             </tr>
             {% for signout in current_signouts %}
-                {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
+                {% if signout[3] in settings["locations"] and ((time-signout[4])/60)|int > settings["locations"][signout[3]] %}
                     {% set flagged = True %}
                     {% set color = "red" %}
                 {% else %}
@@ -33,7 +33,7 @@
                     <td>{{ signout[3] }}</td>
                     <td>{{ signout[4]|time(settings["time_format"]) }}</td>
                     <td style="color: {{ color }};">
-                        <span>{{ time - signout[4] }}</span>
+                        <span>{{ ((time-signout[4])/60)|int }} min</span>
                     </td>
                     <td>
                         {% if flagged %}
@@ -65,7 +65,7 @@
                 <th>Total time</th>
             </tr>
             {% for signout in past_signouts %}
-                {% if signout[3] in settings["locations"] and time - signout[4] > settings["locations"][signout[3]] %}
+                {% if signout[3] in settings["locations"] and ((signout[5]-signout[4])/60)|int > settings["locations"][signout[3]] %}
                     {% set flagged = True %}
                     {% set color = "red" %}
                 {% else %}
@@ -78,7 +78,7 @@
                     {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
                     <td>{{ signout[4]|time(combo_format) }}</td>
                     <td>{{ signout[5]|time(combo_format) }}</td>
-                    <td style="color: {{ color }};">{{ signout[5] - signout[4] }}</td>
+                    <td style="color: {{ color }};">{{ ((signout[5]-signout[4])/60)|int }} min</td>
                 </tr>
             {% endfor %}
         </table>
