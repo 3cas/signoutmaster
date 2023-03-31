@@ -97,9 +97,9 @@
         </div>
         <br>
         <span>Your URL:</span>
-        {% set DOMAIN = "127.0.0.1:5000" %}
+        {% set DOMAIN = "http://127.0.0.1:5000" %}
         {% set link = url_for("signout.remote_link", key=settings["remote_url"]) %}
-        <a href="{{ link }}" target="_blank">https://{{ DOMAIN }}{{ link }}</a>
+        <a href="{{ link }}" target="_blank">{{ DOMAIN }}{{ link }}</a>
     {% else %}
         <div class="align">
             <span>Status:</span>
