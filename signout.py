@@ -11,7 +11,7 @@ import setup
 signout = Blueprint("signout", __name__)
 
 ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
-ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{.student_unlock}~@."
+ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{}~@."
 
 DEFAULT_SETTINGS = {
     "locations": {
@@ -64,10 +64,10 @@ def check_user(*, student: bool = False, onboard: bool = False):
     
     # now we check settings to see if the service can be used
     try:
-        # check if dict in config column
+        # check if config column can be converted to dict
         settings = json.loads(config)
     except:
-        # no dict in config column, setting to empty dict
+        # not dict-able, so we set to empty dict and stop users later
         settings = {}
         session["onboard"] = True
     else:
@@ -240,20 +240,20 @@ def logout():
     return redirect(url_for("signout.home"))
 
 # /panel route has been removed, it was going to be a hub
-# now navigation is handled via topbar and tabbed.html, new logins shown welcome.html
+# now navigation is handled via topbar and tabbed.html, new logins shown welcome.html (? they dont...)
 
 # settings page
-@signout.route("/settings")
+@signout.route("/panel/settings")
 def settings():
     if error := check_user(onboard=True): return user_error(error)
 
-    user_settings = g.cur.execute(
-        "SELECT config FROM users WHERE id = ?",
+    user = g.cur.execute(
+        "SELECT username, schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
-    ).fetchone()[0]
-    user_settings = json.loads(user_settings)
+    ).fetchone()
+    user_settings = json.loads(user[2])
 
-    return render_template("settings.html", settings=user_settings)
+    return render_template("settings.html", username=user[0], schoolname=user[1], settings=user_settings)
 
 # apply settings backend
 @signout.route("/settings/handler", methods=["POST"])
@@ -326,6 +326,15 @@ def apply_settings():
 
     # TODO: add id min and max here and to settings.html
 
+    # set autoscroll anchor based on which settings were changed
+    anchor = None
+    if date_format or time_format:
+        anchor = "display"
+    if set_remote or regen_remote:
+        anchor = "remote"
+    if remove_location or add_location or add_location_time or set_other or set_leave:
+        anchor = "destinations"
+
     # put user settings back in database
     user_settings = json.dumps(user_settings)
     g.cur.execute(
@@ -334,18 +343,18 @@ def apply_settings():
     )
 
     flash("Applied changes!", "pos")
-    return redirect(url_for("signout.settings"))
+    return redirect(url_for("signout.settings", _anchor=anchor))
 
 # monitor student signouts
-@signout.route("/monitor")
+@signout.route("/panel/monitor")
 def monitor():
     if error := check_user(): return user_error(error)
 
-    config = g.cur.execute(
-        "SELECT config FROM users WHERE id = ?",
+    user = g.cur.execute(
+        "SELECT username, schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
-    ).fetchone()[0]
-    settings = json.loads(config)
+    ).fetchone()
+    settings = json.loads(user[2])
 
     try:
         signouts = g.cur.execute(
@@ -368,10 +377,17 @@ def monitor():
             else:
                 curr.append(signout)
 
-    return render_template("monitor.html", settings=settings, time=now(), current_signouts=curr, past_signouts=past)
+    return render_template("monitor.html", 
+        username=user[0], 
+        schoolname=user[1], 
+        settings=settings, 
+        time=now(), 
+        current_signouts=curr, 
+        past_signouts=past
+    )
 
 # lock panel in student mode
-@signout.route("/lock")
+@signout.route("/panel/lock")
 def student_lock():
     if error := check_user(): return user_error(error)
     flash("The panel has been locked in student mode", "inf")
@@ -379,7 +395,7 @@ def student_lock():
     
     return redirect(url_for("signout.student"))
 
-@signout.route("/unlock")
+@signout.route("/panel/unlock")
 def student_unlock():
     if error := check_user(student=True, onboard=True): return user_error(error)
     if "student_lock" not in session or session["student_lock"] == False:
@@ -388,7 +404,7 @@ def student_unlock():
     
     return render_template("unlock.html")
 
-@signout.route("/unlock/handler", methods=["POST"])
+@signout.route("/panel/unlock/handler", methods=["POST"])
 def unlock_handler():
     if error := check_user(student=True, onboard=True): return user_error(error)
     
@@ -411,7 +427,7 @@ def unlock_handler():
     return redirect(url_for("signout.student_unlock"))
 
 # student view of panel, must re-login to be admin
-@signout.route("/student")
+@signout.route("/panel/student")
 def student():
     if error := check_user(student=True): return user_error(error)
 
@@ -428,7 +444,7 @@ def student():
     return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
 
 # student panel signout or in backend
-@signout.route("/student/handler", methods=["POST"])
+@signout.route("/panel/student/handler", methods=["POST"])
 def student_handler():
     student_id = request.form.get("id")
     destination = request.form.get("destination")
@@ -526,7 +542,7 @@ def student_handler():
     flash(message, color)
     return redir
 
-@signout.route("/clearall")
+@signout.route("/panel/monitor/clearall")
 def clear_signouts():
     if error := check_user(): return user_error(error)
 
@@ -554,10 +570,15 @@ def remote_link(key):
     if user:
         settings = json.loads(user[1])
 
-        return render_template("student.html", schoolname=user[0], time=now(), settings=settings, remote_key=key)
+        if settings["remote_on"]:
+            return render_template("student.html", 
+                schoolname=user[0], 
+                time=now(), 
+                settings=settings, 
+                remote_key=key
+            )
     
-    else:
-        return "The link you followed was invalid!"
+    return "The link you followed was invalid!"
 
 # wip username/email/etc taken checker
 @signout.route("/check")

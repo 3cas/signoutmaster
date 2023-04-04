@@ -254,3 +254,7 @@ noscript span {
 .fade {
     animation: fade 3s linear;
 }
+
+.blank {
+    height: 300px;
+}

@@ -12,7 +12,7 @@
     {{ get_flashes() }}
 
     <hr>
-    <h2>Edit Destinations</h2>
+    <h2 id="destinations">Edit Destinations</h2>
     <p>Here you can set the destinations that your students can select when signing out of class.</p>
     {% if not settings["locations"] %}
         <span class="required">Warning: You must have at least one signout destination available to use the service.</span>
@@ -81,7 +81,7 @@
     </table>
 
     <hr>
-    <h2>Remote Access Link</h2>
+    <h2 id="remote">Remote Access Link</h2>
     <p>This feature allows you to generate a randomized secure link which allows access to the student signout panel.</p>  
     {% if settings["remote_on"] %}
         <div class="align">
@@ -110,38 +110,40 @@
             </form>
         </div>
     {% endif %}
+
     <hr>
-    <h2>Display Preferences</h2>
+    <h2 id="display">Display Preferences</h2>
     <p>Set your preferred formats and visual themes.</p>
     <form method="post" action="{{ url_for('signout.apply_settings') }}">
+        {% set timestamp = 1601231479 %}
         <label for="date-format">Date format:</label>
         <select name="date-format" onchange="this.form.submit()">
-            {% set selected = false %}
-            {% for opt in [["%m/%d", "9/27"], ["%d/%m", "27/9"], ["%b %d", "Sept 27"], ["%d %b", "27 Sept"]] %}
-                {% if opt[0] == settings["date_format"] %}
-                    <option value="{{ opt[0] }}" selected>{{ opt[1] }}</option>
-                    {% set selected = true %}
+            {% set selected = namespace(value=0) %}
+            {% for opt in ["%m/%d", "%d/%m", "%b %d", "%d %b"] %}
+                {% if opt == settings["date_format"] %}
+                    <option value="{{ opt }}" selected>{{ timestamp|time(opt) }}</option>
+                    {% set selected.value = 1 %}
                 {% else %}
-                    <option value="{{ opt[0] }}">{{ opt[1] }}</option>
+                    <option value="{{ opt }}">{{ timestamp|time(opt) }}</option>
                 {% endif %}
             {% endfor %}
-            {% if not selected %}
+            {% if selected.value == 0 %}
                 <option value="none" selected disabled hidden>Custom: {{ settings["date_format"] }}</option>
             {% endif %}
         </select>
         <br>
         <label for="time-format">Time format:</label>
         <select name="time-format" onchange="this.form.submit()">
-            {% set selected = false %}
-            {% for opt in [["%I:%M %p", "2:31 PM"], ["%H:%M", "14:31"]] %}
-                {% if opt[0] == settings["time_format"] %}
-                    <option value="{{ opt[0] }}" selected>{{ opt[1] }}</option>
-                    {% set selected = true %}
+            {% set selected = namespace(value=0) %}
+            {% for opt in ["%I:%M %p", "%H:%M"] %}
+                {% if opt == settings["time_format"] %}
+                    <option value="{{ opt }}" selected>{{ timestamp|time(opt) }}</option>
+                    {% set selected.value = 1 %}
                 {% else %}
-                    <option value="{{ opt[0] }}">{{ opt[1] }}</option>
+                    <option value="{{ opt }}">{{ timestamp|time(opt) }}</option>
                 {% endif %}
             {% endfor %}
-            {% if not selected %}
+            {% if selected.value == 0 %}
                 <option value="none" selected disabled hidden>Custom: {{ settings["time_format"] }}</option>
             {% endif %}
         </select>
@@ -150,4 +152,6 @@
             <input type="submit" value="Apply time settings">
         </noscript>
     </form>
+
+    <div class="blank"></div>
 {% endblock %}

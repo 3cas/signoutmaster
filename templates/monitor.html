@@ -6,6 +6,17 @@
     {{ nav("monitor") }}
 {% endblock %}
 
+{% macro time_diff(diff) %}
+    {% set mins = (diff/60)|int %}
+    {% if mins > 60 %}
+        {% set hours = (mins//60)|int %}
+        {% set remainder = (mins%60)|int %}
+        <span>{{ hours }} hrs {{ remainder }} min</span>
+    {% else %}
+        <span>{{ mins }} min</span>
+    {% endif %}
+{% endmacro %}
+
 {% block content %}
     <h1>Monitor Students</h1>
     {{ get_flashes() }}
@@ -33,7 +44,7 @@
                     <td>{{ signout[3] }}</td>
                     <td>{{ signout[4]|time(settings["time_format"]) }}</td>
                     <td style="color: {{ color }};">
-                        <span>{{ ((time-signout[4])/60)|int }} min</span>
+                        {{ time_diff(time-signout[4]) }}
                     </td>
                     <td>
                         {% if flagged %}
@@ -78,7 +89,9 @@
                     {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
                     <td>{{ signout[4]|time(combo_format) }}</td>
                     <td>{{ signout[5]|time(combo_format) }}</td>
-                    <td style="color: {{ color }};">{{ ((signout[5]-signout[4])/60)|int }} min</td>
+                    <td style="color: {{ color }};">
+                        {{ time_diff(signout[5]-signout[4]) }}
+                    </td>
                 </tr>
             {% endfor %}
         </table>
