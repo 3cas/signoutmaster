@@ -1,21 +1,21 @@
-{% extends "center.html" %}
+{% extends "base.html" %}
 
 {% block title %}A student sign-out manager that fits your needs{% endblock %}
 
-{% block content %}
-    <div class="container">
+{% block body %}
+    <div class="bar">
+        <img class="logo-home" src="{{ url_for('static', filename='logo.png') }}" alt="SignoutMaster logo">
         {{ get_flashes() }}
-        <p>Hello, welcome to the SignoutMaster home page.</p>
-        <p>Better view coming soon.</p>
-        <ul>
+        <div class="align">
             {% if username %}
-                <li>Logged in as {{ username }}</li>
-                <li><a href="{{ url_for('signout.monitor') }}">Monitor</a></li>
-                <li><a href="{{ url_for('signout.logout') }}">Log out</a></li>
+                <span>Logged in as {{ username }}</span>
+                <a class="button" href="{{ url_for('signout.monitor') }}">Monitor</a>
+                <a class="button" href="{{ url_for('signout.logout') }}">Log out</a>
             {% else %}
-                <li><a href="{{ url_for('signout.login') }}">Login</a></li>
-                <li><a href="{{ url_for('signout.register') }}">Register</a></li>
+                <a class="button" href="{{ url_for('signout.login') }}">Login</a>
+                <a class="button" href="{{ url_for('signout.register') }}">Register</a>
             {% endif %}
-        </ul>
+        </div>
     </div>
+    <h1>Welcome to SignoutMaster. A student manager app that meets your needs.</h1>
 {% endblock %}

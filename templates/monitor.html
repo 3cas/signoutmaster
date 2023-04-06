@@ -74,6 +74,7 @@
                 <th>Time out</th>
                 <th>Time in</th>
                 <th>Total time</th>
+                <th>Delete</th>
             </tr>
             {% for signout in past_signouts %}
                 {% if signout[3] in settings["locations"] and ((signout[5]-signout[4])/60)|int > settings["locations"][signout[3]] %}
@@ -92,13 +93,16 @@
                     <td style="color: {{ color }};">
                         {{ time_diff(signout[5]-signout[4]) }}
                     </td>
+                    <td>
+                        <form action="{{ url_for('signout.delete_signout') }}" method="post">
+                            <input name="id" type="text" value="{{ signout[0] }}" hidden>
+                            <input type="submit" value="Delete">
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
         <p>No past signouts have occurred.</p>
     {% endif %}
-    <a href="{{ url_for('signout.clear_signouts') }}">
-        <button class="neg">Clear all events</button>
-    </a>
 {% endblock %}

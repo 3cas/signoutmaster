@@ -13,10 +13,8 @@ document.onkeydown = (e) => {
 
         if (e.key == "ArrowUp") {
             selectedIndex --
-            console.log(selectedIndex)
         } else if (e.key == "ArrowDown") {
             selectedIndex ++
-            console.log(selectedIndex)
         }
 
         if (selectedIndex < 0) {
@@ -37,8 +35,12 @@ document.onkeydown = (e) => {
 
         if (selectedValue == "other") {
             document.getElementById("otherval").focus()
+            // document.getElementById("otherval").setAttribute("disabled", false)
+        } else {
+            document.getElementById("student-id").focus()
+            // document.getElementById("otherval").setAttribute("disabled", true)
         }
-    } 
+    }
     // else if (e.key == "h") {
     //     let dismiss = document.getElementById("dismiss")
     //     if (dismiss.checked) {

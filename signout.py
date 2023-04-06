@@ -542,7 +542,35 @@ def student_handler():
     flash(message, color)
     return redir
 
-@signout.route("/panel/monitor/clearall")
+@signout.route("/panel/monitor/delete", methods=["POST"])
+def delete_signout():
+    if error := check_user(): return user_error(error)
+
+    event_id = request.form.get("id")
+
+    if event_id:
+        school_id = g.cur.execute(
+            "SELECT school_id FROM signouts WHERE id = ?",
+            (event_id,)
+        ).fetchone()[0]
+
+        if school_id == session["user_id"]:
+            g.cur.execute(
+                "DELETE FROM signouts WHERE id = ?",
+                (event_id,)
+            )
+
+            flash(f"Deleted signout #{event_id}", "pos")
+
+        else:
+            flash("You do not have authorization to delete that event", "neg")
+
+    else:    
+        flash("There has been an error", "neg")
+    
+    return redirect(url_for("signout.monitor"))
+    
+@signout.route("/panel/monitor/clearall", methods=["POST"])
 def clear_signouts():
     if error := check_user(): return user_error(error)
 
@@ -573,7 +601,7 @@ def remote_link(key):
         if settings["remote_on"]:
             return render_template("student.html", 
                 schoolname=user[0], 
-                time=now(), 
+                time=datetime.utcnow().strftime("%-I:%M %p"), 
                 settings=settings, 
                 remote_key=key
             )
