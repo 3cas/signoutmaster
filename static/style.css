@@ -275,3 +275,18 @@ noscript span {
 .blank {
     height: 300px;
 }
+
+svg {
+    height: 16px;
+    width: 16px;
+    vertical-align: -0.125em;
+}
+
+.info {
+    cursor: help;
+}
+
+.info svg {
+    fill: var(--accent);
+}
+

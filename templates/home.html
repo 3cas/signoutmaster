@@ -2,8 +2,12 @@
 
 {% block title %}A student sign-out manager that fits your needs{% endblock %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='homestyle.css') }}">
+{% endblock %}
+
 {% block body %}
-    <div class="bar">
+    <div class="hamburger">
         <img class="logo-home" src="{{ url_for('static', filename='logo.png') }}" alt="SignoutMaster logo">
         {{ get_flashes() }}
         <div class="align">
@@ -17,5 +21,28 @@
             {% endif %}
         </div>
     </div>
-    <h1>Welcome to SignoutMaster. A student manager app that meets your needs.</h1>
+    <div class="cheeseburger">
+        <h1>Welcome to SignoutMaster. A student manager app that meets your needs.</h1>
+        <h3>What can it do?</h3>
+        <p>SignoutMaster is a panel that students can use to sign in and out of class, to go to the bathroom, office, or anywhere they need to be.</p>
+        <h3>Features of SignoutMaster</h3>
+        <ul>
+            <li>Access control to allow students to only sign themselves out and back in</li>
+            <li>A robust setting system to customize any aspect of the panel, designed to suit any school</li>
+            <li>Flagging of suspiciously long signouts, which can also be customized easily</li>
+            <li>Simple yet capable UI, allowing the students to even sign out without using the mouse</li>
+            <li>Remote URL access, so you can set up signout panels around the school quickly and affectively</li>
+        </ul>
+        <h3>UI Preview</h3>
+        <p>it will be here once it looks better</p>
+        <h3>What signoutmaster is NOT</h3>
+        <p>SignoutMaster is not intended for attendance, rather as a "hall pass" system. It also doesn't provide a student database, so student IDs aren't validated (yet?).</p>
+        <h3>Register for FREE!</h3>
+        <p>Since this is a fairly underground project, registration is currently 100% free and we appreciate every user.</p>
+        <a class="button" href="{{ url_for('signout.register') }}">Register!</a>
+        <br>
+        <br>
+        <br>
+        <i>SignoutMaster is an <a href="https://github.com/weirdcease/signoutmaster" target="_blank">open-source</a> project, developed by <a href="https://weirdcease.com" target="_blank">weirdcease</a> (Charles AS)</i>
+    </div>
 {% endblock %}

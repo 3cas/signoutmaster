@@ -240,7 +240,7 @@ def logout():
     return redirect(url_for("signout.home"))
 
 # /panel route has been removed, it was going to be a hub
-# now navigation is handled via topbar and tabbed.html, new logins shown welcome.html (? they dont...)
+# now navigation is handled via topbar and tabbed.html
 
 # settings page
 @signout.route("/panel/settings")
@@ -542,6 +542,7 @@ def student_handler():
     flash(message, color)
     return redir
 
+# delete signout event
 @signout.route("/panel/monitor/delete", methods=["POST"])
 def delete_signout():
     if error := check_user(): return user_error(error)
@@ -569,7 +570,8 @@ def delete_signout():
         flash("There has been an error", "neg")
     
     return redirect(url_for("signout.monitor"))
-    
+
+# the silly link
 @signout.route("/panel/monitor/clearall", methods=["POST"])
 def clear_signouts():
     if error := check_user(): return user_error(error)
@@ -586,6 +588,11 @@ def clear_signouts():
         flash("Something went RIGHT!", "pos")
 
     return redirect(url_for("signout.monitor"))
+
+# badly written tos
+@signout.route("/terms")
+def terms():
+    return render_template("terms.html")
 
 # unimplemented share link feature
 @signout.route("/remote/<key>")

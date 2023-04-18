@@ -1,0 +1,11 @@
+.hamburger {
+    background-color: var(--accent);
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
+
+.hamburger *, .cheeseburger {
+    margin: 20px;
+}

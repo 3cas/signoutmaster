@@ -1,6 +1,10 @@
 const ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
 const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
+const tooltips = {
+    "test": "Hello world!",
+}
+
 var flashes = []
 var FLASH_TIMEOUT = 3
 
@@ -109,6 +113,15 @@ function copyLink() {
     navigator.clipboard.writeText(link)
     let message = document.createTextNode(" *copied!*")
     remoteLink.appendChild(message)
+}
+
+function showInfo(key) {
+    let info = tooltips[key]
+    if (info) {
+        alert(info)
+    } else {
+        alert("Error: Tooltip not found")
+    }
 }
 
 fadeFlashes()
