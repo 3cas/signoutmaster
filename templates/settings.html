@@ -152,6 +152,27 @@
             <input type="submit" value="Apply time settings">
         </noscript>
     </form>
+    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+        <label for="accent-color">Accent color for student panel:</label>
+        {% if settings["accent_color"] %}
+            {% set color = settings["accent_color"] %}
+        {% else %}
+            {% set color = "339382" %}
+        {% endif %}
+        <input type="color" name="accent-color" value=>
+        <input type="submit" value="Set">
+    </form>
+    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+        <label for="logo-url">School logo URL (leave blank to disable):</label>
+        <input type="text" name="logo-url">
+        <input type="submit" value="Set">
+        <br>
+        {% if settings["logo_url"] %}
+            <span>Preview:</span>
+            <br>
+            <img src="{{ settings['logo_url'] }}" class="preview" style="border-color: {{ color }};">
+        {% endif %}
+    </form>
 
     <div class="blank"></div>
 {% endblock %}

@@ -26,7 +26,10 @@ DEFAULT_SETTINGS = {
     "date_format": "%m/%d",
     "time_format": "%I:%M %p",
     "id_min": 4,
-    "id_max": 8
+    "id_max": 8,
+    "accent_color": "6495ed",
+    "accent_everywhere": False,
+    "logo_url": None,
 }
 
 # NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
@@ -102,6 +105,15 @@ def gen_remote():
     for i in range(64):
         key += random.choice(ALLOWED_USERNAME)
     return key
+
+# check string 1 or 0 for form submission in settings
+def truth(value: str):
+    if value == "1":
+        return True
+    elif value == "0":
+        return False
+    else:
+        return "error"
 
 # connect to database before every request
 @signout.before_request
@@ -283,6 +295,9 @@ def apply_settings():
     time_format = request.form.get("time-format")
     id_min = request.form.get("id-min")
     id_max = request.form.get("id-max")
+    accent_color = request.form.get("accent-color")
+    accent_everywhere = request.form.get("accent-everywhere")
+    logo_url = request.form.get("logo-url")
 
     # apply settings
 
@@ -294,37 +309,40 @@ def apply_settings():
             add_time = int(add_location_time)
         except ValueError:
             flash("You must supply integer times", "neg")
-            return redirect(url_for("signout.settings"))
         else:
             user_settings["locations"][add_location] = add_time
 
-    if set_other == "0":
-        user_settings["allow_other"] = False
-    elif set_other == "1":
-        user_settings["allow_other"] = True
+    if set_other: user_settings["allow_other"] = truth(set_other)
+    if set_leave: user_settings["allow_leave"] = truth(set_leave)
 
-    if set_leave == "0":
-        user_settings["allow_leave"] = False
-    elif set_leave == "1":
-        user_settings["allow_leave"] = True
+    if set_remote:
+        if truth(set_remote):
+            user_settings["remote_on"] = True
+            if not user_settings["remote_url"]:
+                user_settings["remote_url"] = gen_remote()
+        elif not truth(set_remote): 
+            user_settings["remote_on"] = False
 
-    if set_remote == "1":
-        user_settings["remote_on"] = True
-        if not user_settings["remote_url"]:
-            user_settings["remote_url"] = gen_remote()
-    elif set_remote == "0":
-        user_settings["remote_on"] = False
+    if truth(regen_remote): user_settings["remote_url"] = gen_remote()
 
-    if regen_remote == "1":
-        user_settings["remote_url"] = gen_remote()
+    if date_format: user_settings["date_format"] = date_format
+    if time_format: user_settings["time_format"] = time_format
 
-    if date_format:
-        user_settings["date_format"] = date_format
-    
-    if time_format:
-        user_settings["time_format"] = time_format
+    if id_min: user_settings["id_min"] = id_min
+    if id_max: user_settings["id_max"] = id_max
 
-    # TODO: add id min and max here and to settings.html
+    if accent_color:
+        if len(accent_color) == 7: accent_color = accent_color[1:]
+        try:
+            int(accent_color, 16)
+        except ValueError:
+            flash("Color provided is not hexidecimal", "neg")
+        else:
+            user_settings["accent_color"] = accent_color
+
+    if accent_everywhere: user_settings["accent_everywhere"] = truth(accent_everywhere)
+
+    if logo_url: user_settings["logo_url"] = logo_url
 
     # set autoscroll anchor based on which settings were changed
     anchor = None
