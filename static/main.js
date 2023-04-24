@@ -111,8 +111,9 @@ function copyLink() {
     let remoteLink = document.getElementById("remote-link")
     let link = remoteLink.textContent
     navigator.clipboard.writeText(link)
-    let message = document.createTextNode(" *copied!*")
-    remoteLink.appendChild(message)
+    let button = document.getElementById("copier")
+    button.textContent = "Copied!"
+    setTimeout(function () { button.textContent = "Copy Link" }, 1000)
 }
 
 function showInfo(key) {

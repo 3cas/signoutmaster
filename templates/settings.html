@@ -82,7 +82,7 @@
 
     <hr>
     <h2 id="remote">Remote Access Link</h2>
-    <p>This feature allows you to generate a randomized secure link which allows access to the student signout panel.</p>  
+    <p>This feature allows you to generate a randomized secure link which allows access to the student signout panel without signing in on that device.</p>  
     {% if settings["remote_on"] %}
         <div class="align">
             <span>Status:</span>
@@ -94,7 +94,7 @@
                 <input type="text" name="regen-link" value="1" hidden>
                 <input type="submit" value="Regenerate Link">
             </form>
-            <button onclick="copyLink();">Copy Link</button>
+            <button onclick="copyLink();" id="copier">Copy Link</button>
         </div>
         <br>
         <span>Your URL:</span>
@@ -159,7 +159,7 @@
         {% else %}
             {% set color = "339382" %}
         {% endif %}
-        <input type="color" name="accent-color" value=>
+        <input type="color" name="accent-color" value="#{{ color }}">
         <input type="submit" value="Set">
     </form>
     <form method="post" action="{{ url_for('signout.apply_settings') }}">
@@ -167,7 +167,7 @@
         <input type="text" name="logo-url">
         <input type="submit" value="Set">
         <br>
-        {% if settings["logo_url"] %}
+        {% if settings["logo_url"] and "http" in settings["logo_url"] %}
             <span>Preview:</span>
             <br>
             <img src="{{ settings['logo_url'] }}" class="preview" style="border-color: {{ color }};">

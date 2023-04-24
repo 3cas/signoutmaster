@@ -1,6 +1,6 @@
 @supports (font-variation-settings: normal) {
     :root {
-        font-family: 'Inter var', sans-serif;
+        font-family: 'Inter var', Arial, sans-serif;
     }
 }
 
@@ -11,7 +11,7 @@
 }
 
 :root {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', Arial, sans-serif;
     --accent: cornflowerblue;
 }
 
@@ -25,7 +25,7 @@ body {
 }
 
 body * {
-    font-family: "Inter";
+    font-family: inherit;
 }
 
 form * {
@@ -208,6 +208,7 @@ noscript span {
 }
 
 .headbox {
+    width: 600px;
     display: flex;
     justify-content: flex-start;
     align-items: center;

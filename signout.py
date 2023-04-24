@@ -10,8 +10,9 @@ import setup
 
 signout = Blueprint("signout", __name__)
 
-ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
-ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{}~@."
+KEY_POSS = "abcdefghijklmnopqrstuvwxyz1234567890"
+ALLOWED_USERNAME = KEY_POSS + "_-"
+ALLOWED_EMAIL = ALLOWED_USERNAME + "!#$%&'*+/=?^`{}~@."
 
 DEFAULT_SETTINGS = {
     "locations": {
@@ -101,10 +102,7 @@ def user_error(error: list):
 
 # used to generate remote access links
 def gen_remote():
-    key = ""
-    for i in range(64):
-        key += random.choice(ALLOWED_USERNAME)
-    return key
+    return "".join([random.choice(KEY_POSS) for i in range(64)])
 
 # check string 1 or 0 for form submission in settings
 def truth(value: str):
@@ -310,7 +308,10 @@ def apply_settings():
         except ValueError:
             flash("You must supply integer times", "neg")
         else:
-            user_settings["locations"][add_location] = add_time
+            if add_time > 0:
+                user_settings["locations"][add_location] = add_time
+            else:
+                flash("You must supply positive times", "neg")
 
     if set_other: user_settings["allow_other"] = truth(set_other)
     if set_leave: user_settings["allow_leave"] = truth(set_leave)

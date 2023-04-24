@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="ct">
-        {% if settings["logo_url"] %}
+        {% if settings["logo_url"] and "http" in settings["logo_url"] %}
             <img src="{{ settings['logo_url'] }}" class="preview">
         {% endif %}
         <p>
