@@ -18,7 +18,10 @@ DEFAULT_SETTINGS = {
     "locations": {
         "bathroom": 10,
         "nurse": 30,
-        "office": 15
+        "office": 20,
+        "guidance": 30,
+        "water": 5,
+        "locker": 5
     },
     "allow_other": True,
     "allow_leave": True,
