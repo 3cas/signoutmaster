@@ -15,7 +15,7 @@
     <h2 id="destinations">Edit Destinations</h2>
     <p>Here you can set the destinations that your students can select when signing out of class.</p>
     {% if not settings["locations"] %}
-        <span class="required">Warning: You must have at least one signout destination available to use the service.</span>
+        <span class="required">You must have at least one signout destination available to use the service.</span>
     {% endif %}
     <table>
         <tr>
@@ -159,12 +159,13 @@
         {% else %}
             {% set color = "339382" %}
         {% endif %}
-        <input type="color" name="accent-color" value="#{{ color }}">
+        <input type="color" name="accent-color" value="#{{ color }}" onchange="this.form.submit()">
         <input type="submit" value="Set">
     </form>
+    {#
     <form method="post" action="{{ url_for('signout.apply_settings') }}">
         <label for="logo-url">School logo URL (leave blank to disable):</label>
-        <input type="text" name="logo-url">
+        <input type="text" name="logo-url" value="{{ settings['logo_url'] }}">
         <input type="submit" value="Set">
         <br>
         {% if settings["logo_url"] and "http" in settings["logo_url"] %}
@@ -173,6 +174,7 @@
             <img src="{{ settings['logo_url'] }}" class="preview" style="border-color: {{ color }};">
         {% endif %}
     </form>
+    #}
 
     <div class="blank"></div>
 {% endblock %}

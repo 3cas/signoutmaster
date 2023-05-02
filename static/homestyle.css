@@ -9,3 +9,8 @@
 .hamburger *, .cheeseburger {
     margin: 20px;
 }
+
+.logo-home {
+    height: 80px;
+    width: auto;
+}

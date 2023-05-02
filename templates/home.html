@@ -12,7 +12,7 @@
         {{ get_flashes() }}
         <div class="align">
             {% if username %}
-                <span>Logged in as {{ username }}</span>
+                <span>Logged in as <b>{{ schoolname }}</b> ({{ username }})</span>
                 <a class="button" href="{{ url_for('signout.monitor') }}">Monitor</a>
                 <a class="button" href="{{ url_for('signout.logout') }}">Log out</a>
             {% else %}

@@ -89,9 +89,19 @@
                     <td>{{ signout[3] }}</td>
                     {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
                     <td>{{ signout[4]|time(combo_format) }}</td>
-                    <td>{{ signout[5]|time(combo_format) }}</td>
+                    <td>
+                        {% if signout[5] == -1 %}
+                            dismissed
+                        {% else %}
+                            {{ signout[5]|time(combo_format) }}
+                        {% endif %}
+                    </td>
                     <td style="color: {{ color }};">
-                        {{ time_diff(signout[5]-signout[4]) }}
+                        {% if signout[5] == -1 %}
+                            N/A
+                        {% else %}
+                            {{ time_diff(signout[5]-signout[4]) }}
+                        {% endif %}
                     </td>
                     <td>
                         <form action="{{ url_for('signout.delete_signout') }}" method="post">

@@ -32,7 +32,7 @@
             <div class="headbox">
                 <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="logo" title="spinning thing">
                 {% if schoolname is defined %}
-                    <span>Logged in as <b>{{ schoolname }}</b></span>
+                    <span>Logged in as <b>{{ schoolname }}</b> ({{ username }})</span>
                 {% endif %}
             </div>
             <div class="topnav">

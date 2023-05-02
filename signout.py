@@ -127,14 +127,17 @@ def before_request():
 @signout.route("/home")
 def home():
     if not check_user():
-        username = g.cur.execute(
-            "SELECT username FROM users WHERE id = ?",
+        user = g.cur.execute(
+            "SELECT username, schoolname FROM users WHERE id = ?",
             (session["user_id"],)
-        ).fetchone()[0]
-    else:
-        username = None
+        ).fetchone()
 
-    return render_template("home.html", username=username)
+        username = user[0]
+        schoolname = user[1]
+    else:
+        username = schoolname = None
+
+    return render_template("home.html", schoolname=schoolname, username=username)
 
 # register view
 @signout.route("/register")
@@ -560,6 +563,20 @@ def student_handler():
         else:
             message = f"{student_id}: You have signed out to {destination}"
         color = "pos"
+
+        if dismiss:
+            try:
+                g.cur.execute(
+                    "UPDATE signouts SET time_in = ? WHERE school_id = ? AND student_id = ?",
+                    (-1, school_id, student_id)
+                )
+
+            except:
+                message += ". However, there was an error and the student could not be dismissed."
+                color = "neg"
+
+            else:
+                message += " and been dismissed"
 
     flash(message, color)
     return redir
