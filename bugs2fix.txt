@@ -1,6 +1,0 @@
-[FIXED] schools with long names extend the tabbed bar past the box div
-- destinations with long names expand the settings table
-- destinations with long names expand the monitor table
-[FIXED] negative numbers allowed in max time?
-- destinations with long names expand the signout page window
-[FIXED] remote link copy message looks HORRIBLE
