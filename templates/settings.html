@@ -8,9 +8,7 @@
 
 {% block content %}
     <h1>Settings</h1>
-    <i>Settings are saved as soon as they are changed.</i>
     {{ get_flashes() }}
-
     <hr>
     <h2 id="destinations">Edit Destinations</h2>
     <p>Here you can set the destinations that your students can select when signing out of class.</p>
@@ -61,9 +59,10 @@
                 <input type="text" name="set-other" value="{{ submit }}" hidden>
                 <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
             </form>
+            <td>{{ info("allowother") }}</td>
         </tr>
         <tr>
-            <td>Allow leaving</td>
+            <td>Allow dismissal</td>
             {% if settings["allow_leave"] %}
                 {% set submit = "0" %}
                 {% set class = "pos" %}
@@ -77,6 +76,7 @@
                 <input type="text" name="set-leave" value="{{ submit }}" hidden>
                 <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
             </form>
+            <td>{{ info("allowdismiss") }}</td>
         </tr>
     </table>
 

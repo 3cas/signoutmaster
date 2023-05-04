@@ -17,9 +17,6 @@
             <br>
             <input type="text" name="schoolname" placeholder="school name" required minlength="3" maxlength="64">
             <br>
-            <input type="text" name="username" id="username" placeholder="username" required minlength="3" maxlength="16" onkeyup="checkFields();" value="{{ request.form['username'] }}">
-            <span id="feedback-username"></span>
-            <br>
             <input type="password" name="password" id="password" placeholder="password" required minlength="8" maxlength="64" onkeyup="checkFields();">
             <br>
             <input type="password" name="confirm_password" id="password-confirm" placeholder="confirm password" required minlength="8" maxlength="64" onkeyup="checkFields();">

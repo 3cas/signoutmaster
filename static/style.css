@@ -302,3 +302,8 @@ svg {
     height: 200px;
     border: 3px solid var(--accent);
 }
+
+.student-id {
+    font-size: 25px;
+    width: 10ch;
+}

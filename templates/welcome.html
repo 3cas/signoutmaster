@@ -4,7 +4,7 @@
 
 {% block content %}
     {{ get_flashes() }}
-    <p>Welcome {{ username }}, you have logged in as <b>{{ schoolname }}</b>.</p>
+    <p>Welcome, you have logged in as <b>{{ schoolname }}</b>.</p>
     {% if session["onboard"] %}
         <p>You must set <a href="{{ url_for('signout.settings') }}">required settings</a> to use the service.</p>
     {% else %}

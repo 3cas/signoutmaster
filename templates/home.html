@@ -11,8 +11,8 @@
         <img class="logo-home" src="{{ url_for('static', filename='logo.png') }}" alt="SignoutMaster logo">
         {{ get_flashes() }}
         <div class="align">
-            {% if username %}
-                <span>Logged in as <b>{{ schoolname }}</b> ({{ username }})</span>
+            {% if schoolname %}
+                <span>Logged in as <b>{{ schoolname }}</b></span>
                 <a class="button" href="{{ url_for('signout.monitor') }}">Monitor</a>
                 <a class="button" href="{{ url_for('signout.logout') }}">Log out</a>
             {% else %}
