@@ -9,6 +9,7 @@
 {% block content %}
     <h1>Settings</h1>
     {{ get_flashes() }}
+    {% set sub = url_for('signout.apply_settings') %}
     <hr>
     <h2 id="destinations">Edit Destinations</h2>
     <p>Here you can set the destinations that your students can select when signing out of class.</p>
@@ -22,7 +23,7 @@
             <td></td>
         </tr>
         <tr>
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <td><input type="text" name="add-location" placeholder="Add location..." size="15" maxlength="64" required></td>
                 <td><input type="text" name="add-location-time" placeholder="Max time" size="5" maxlength="3" required></td>
                 <td><input type="submit" value="&#x2795;"></td>
@@ -31,7 +32,7 @@
         {% if settings["locations"] %}
             {% for location in settings["locations"] %}
                 <tr>
-                    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+                    <form method="post" action="{{ sub }}">
                         <td><span>{{ location }}</span></td>
                         <td><span>{{ settings["locations"][location] }}</span></td>
                         <input type="text" name="remove-location" value="{{ location }}" hidden>
@@ -55,7 +56,7 @@
                 {% set class = "neg" %}
                 {% set value = "no" %}
             {% endif %}
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <input type="text" name="set-other" value="{{ submit }}" hidden>
                 <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
             </form>
@@ -72,7 +73,7 @@
                 {% set class = "neg" %}
                 {% set value = "no" %}
             {% endif %}
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <input type="text" name="set-leave" value="{{ submit }}" hidden>
                 <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
             </form>
@@ -86,11 +87,11 @@
     {% if settings["remote_on"] %}
         <div class="align">
             <span>Status:</span>
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <input type="text" name="set-remote" value="0" hidden>
                 <input type="submit" class="pos" value="enabled">
             </form>
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <input type="text" name="regen-link" value="1" hidden>
                 <input type="submit" value="Regenerate Link">
             </form>
@@ -104,7 +105,7 @@
     {% else %}
         <div class="align">
             <span>Status:</span>
-            <form method="post" action="{{ url_for('signout.apply_settings') }}">
+            <form method="post" action="{{ sub }}">
                 <input type="text" name="set-remote" value="1" hidden>
                 <input type="submit" class="neg" value="disabled">
             </form>
@@ -115,7 +116,7 @@
     <h2 id="display">Display Preferences</h2>
     <p>Set your preferred formats and visual themes.</p>
 
-    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+    <form method="post" action="{{ sub }}">
         {% set timestamp = 1601231479 %}
         <label for="date-format">Date format:</label>
         <select name="date-format" onchange="this.form.submit()">
@@ -154,7 +155,7 @@
         </noscript>
     </form>
 
-    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+    <form method="post" action="{{ sub }}">
         <label for="timezone">Timezone:</label>
         <select name="timezone" onchange="this.form.submit()">
             {% for offset in range(-12, 12) %}
@@ -163,16 +164,24 @@
                 {% else %}
                     {% set plus = "" %}
                 {% endif %}
-                {% set offset_pad = (offset|str).rjust(2, "0") %}
-                {% set adjusted = current_time|time(....!!!) %}
-
-                <option value="{{ offset }}">UTC{{ plus }}{{ offset_pad }}:00 (now {{ current }})</option>
+                {% set offset_pad = (offset|string).rjust(2, "0") %}
+                {% set adjusted = current_time|time("%-I:%M %p", offset) %}
+                {{ settings["timezone"]|print }}
+                {{ offset|print }}
+                {% if settings["timezone"] == offset %}
+                    {{ "YUP!"|print }}
+                    <option value="{{ offset }}" selected>
+                {% else %}
+                    <option value="{{ offset }}">
+                {% endif %}
+                    UTC{{ plus }}{{ offset_pad }}:00 (now {{ adjusted }})
+                </option>
             {% endfor %}
         </select>
         <input type="submit" value="Set">
     </form>
 
-    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+    <form method="post" action="{{ sub }}">
         <label for="accent-color">Accent color for student panel:</label>
         {% if settings["accent_color"] %}
             {% set color = settings["accent_color"] %}
@@ -184,7 +193,7 @@
     </form>
 
     {#
-    <form method="post" action="{{ url_for('signout.apply_settings') }}">
+    <form method="post" action="{{ sub }}">
         <label for="logo-url">School logo URL (leave blank to disable):</label>
         <input type="text" name="logo-url" value="{{ settings['logo_url'] }}">
         <input type="submit" value="Set">
@@ -196,6 +205,32 @@
         {% endif %}
     </form>
     #}
+
+    <hr>
+    <h2 id="account">Account Settings</h2>
+    <p>Change information about your account.</p>
+
+    <h3>Change school name</h3>
+    <form method="post" action="{{ sub }}">
+        <label for="new-schoolname">School Name:</label>
+        <input type="text" name="new-schoolname" value="{{ schoolname }}">
+        <input type="submit" value="Set">
+    </form>
+
+    <h3>Change login email or password</h3>
+    <form method="post" action="{{ sub }}">
+        <label for="new-email">Email:</label>
+        <input type="text" name="new-email" value="{{ email }}">
+        <br>
+        <label for="new-password">New Password:</label>
+        <input type="password" name="new-password">
+        <br>
+        <label for="current-password">Current Password to confirm:</label>
+        <br>
+        <input type="password" name="current-password">
+        <br>
+        <input type="submit">
+    </form>
 
     <div class="blank"></div>
 {% endblock %}

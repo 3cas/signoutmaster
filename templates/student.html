@@ -18,7 +18,9 @@
         <div class="spacer"></div>
         <h2 class="title">Sign Out</h2>
         <div class="spacer">
-            <span class="accent">{{ time }}</span>
+            {% if not remote_key %}
+                <span class="accent">{{ current_time|time("%I:%M %p") }}</span>
+            {% endif %}
         </div>
     </div>
     <div class="ct">

@@ -119,10 +119,22 @@ def truth(value: str):
         return False
     else:
         return "error"
+
+def validate_email(email: str):
+    if not 6 <= len(email) <= 64:
+        return "Email must be between 6 and 64 characters"
     
+    for char in email:
+        if char not in ALLOWED_EMAIL:
+            return "Email contains invalid characters"
+
+def validate_password(password: str):
+    if not 8 <= len(password) <= 64:
+        return "Password must be between 8 and 64 characters"
+
 # helper function (jinja filter) to convert UTC timestamps to formatted local times
 @signout.app_template_filter("time")
-def time(timestamp, template = "%m/%d/%y(%a)%H:%M:%S"):
+def time(timestamp, template: str = "%m/%d/%y(%a)%H:%M:%S", difference: int = None):
     current_time = datetime.fromtimestamp(timestamp)
 
     if not check_user():
@@ -132,14 +144,22 @@ def time(timestamp, template = "%m/%d/%y(%a)%H:%M:%S"):
         ).fetchone()[0]
 
         settings = json.loads(config)
-        if "timezone" in settings:
-            difference = int(settings["timezone"])
-            current_time = current_time + timedelta(hours=difference)
 
-        if "dst" in settings and settings["dst"]:
-            current_time = current_time + timedelta(hours=1)
+        if not difference and "timezone" in settings:
+            difference = int(settings["timezone"])
+        
+        current_time = current_time + timedelta(hours=difference)
+
+        # if "dst" in settings and settings["dst"]:
+        #     current_time = current_time + timedelta(hours=1)
 
     return current_time.strftime(template)
+
+# debug print filter
+@signout.app_template_filter("print")
+def debug_print(message):
+    print(message)
+    return message
 
 # connect to database before every request
 @signout.before_request
@@ -174,26 +194,23 @@ def register_handler():
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
+    re = redirect(url_for("signout.register"))
+
     if not (email and schoolname and password and confirm_password):
         flash("You must fill out all fields", "neg")
-        return redirect(url_for("signout.register"))
-    
-    if not 6 <= len(email) <= 64:
-        flash("Email must be between 6 and 64 characters")
-        return redirect(url_for("signout.register"))
+        return re
     
     if not 3 <= len(schoolname) <= 64:
         flash("School name must be between 3 and 64 characters", "neg")
-        return redirect(url_for("signout.register"))
+        return re
+        
+    if e_err := validate_email(email):
+        flash(e_err, "neg")
+        return re
     
-    if not 8 <= len(password) <= 64:
-        flash("Password must be between 8 and 64 characters", "neg")
-        return redirect(url_for("signout.register"))
-
-    for char in email:
-        if char not in ALLOWED_EMAIL:
-            flash("Email contains invalid characters", "neg")
-            return redirect(url_for("signout.register"))
+    if p_err := validate_password(password):
+        flash(p_err, "neg")
+        return re
 
     if confirm_password != password:
         flash("Passwords do not match!", "neg")
@@ -208,8 +225,9 @@ def register_handler():
                 (email, schoolname, generate_password_hash(password), start_config)
             )
 
-        except sqlite3.IntegrityError:
+        except sqlite3.IntegrityError as e:
             flash("An account with that school name or email already exists.", "neg")
+            print(e)
             return redirect(url_for("signout.register"))
 
         else:
@@ -247,7 +265,7 @@ def login_handler():
         
             session.clear()
             session["user_id"] = user[0]
-            flash(f"Successfully logged in as {user[2]}!", "pos")
+            flash(f"Successfully logged in to {user[2]}!", "pos")
             return redirect(url_for("signout.monitor"))
 
         else:
@@ -274,12 +292,12 @@ def settings():
     if error := check_user(onboard=True): return user_error(error)
 
     user = g.cur.execute(
-        "SELECT schoolname, config FROM users WHERE id = ?",
+        "SELECT schoolname, config, email FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
     user_settings = json.loads(user[1])
 
-    return render_template("settings.html", schoolname=user[0], settings=user_settings)
+    return render_template("settings.html", schoolname=user[0], settings=user_settings, current_time=now(), email=user[2])
 
 # apply settings backend
 @signout.route("/settings/handler", methods=["POST"])
@@ -312,6 +330,11 @@ def apply_settings():
     accent_color = request.form.get("accent-color")
     accent_everywhere = request.form.get("accent-everywhere")
     logo_url = request.form.get("logo-url")
+    timezone = request.form.get("timezone")
+    new_schoolname = request.form.get("new-schoolname")
+    current_password = request.form.get("current-password")
+    new_password = request.form.get("new-password")
+    new_email = request.form.get("new-email")
 
     # apply settings
 
@@ -361,13 +384,70 @@ def apply_settings():
 
     if logo_url: user_settings["logo_url"] = logo_url
 
+    if timezone: 
+        try:
+            user_settings["timezone"] = int(timezone)
+        except:
+            pass
+
+    if new_schoolname:
+        try:
+            g.cur.execute(
+                "UPDATE users SET schoolname = ? WHERE id = ?",
+                (new_schoolname, session["user_id"])
+            )
+        except:
+            flash("Something unexpected went wrong changing school name.", "neg")
+
+    if new_password or new_email:
+        if current_password:
+            password_hash = g.cur.execute(
+                "SELECT password_hash FROM users WHERE id = ?", 
+                (session["user_id"],)
+            ).fetchone()[0]
+
+            if check_password_hash(password_hash, current_password):
+                if new_password:
+                    if p_err := validate_password(new_password):
+                        flash("Error changing password: "+p_err, "neg")
+                    else:
+                        try:
+                            g.cur.execute(
+                                "UPDATE users SET password_hash = ? WHERE id = ?",
+                                (generate_password_hash(new_password), session["user_id"])
+                            )
+                        except:
+                            flash("Something unexpected went wrong changing password.", "neg")
+                        else:
+                            flash("Your password has been changed!", "pos")
+                if new_email:
+                    if e_err := validate_email(new_email):
+                        flash("Error changing email: "+e_err, "neg")
+                    else:
+                        try:
+                            g.cur.execute(
+                                "UPDATE users SET email = ? WHERE id = ?",
+                                (new_email, session["user_id"])
+                            )
+                        except:
+                            flash("Something unexpected went wrong changing email.", "neg")
+                        else:
+                            flash(f"Your email has been changed to {new_email}!", "pos")
+            else:
+                flash("Wrong password for changing important settings!", "neg")
+
+        else:
+            flash("Your current password is required to change password or email!", "neg")
+
     # set autoscroll anchor based on which settings were changed
     anchor = None
-    if date_format or time_format:
+    if any([current_password, new_password, new_schoolname, new_email]):
+        anchor = "account"
+    if any([date_format, time_format, timezone]):
         anchor = "display"
-    if set_remote or regen_remote:
+    if any([set_remote, regen_remote]):
         anchor = "remote"
-    if remove_location or add_location or add_location_time or set_other or set_leave:
+    if any([remove_location, add_location, add_location_time, set_other, set_leave]):
         anchor = "destinations"
 
     # put user settings back in database
@@ -448,7 +528,7 @@ def unlock_handler():
         return redirect(url_for("signout.student_unlock"))
     
     password_hash = g.cur.execute(
-        f"SELECT password_hash FROM users WHERE id = ?", 
+        "SELECT password_hash FROM users WHERE id = ?", 
         (session["user_id"],)
     ).fetchone()[0]
 
@@ -473,9 +553,9 @@ def student():
     settings = user[1]
     settings = json.loads(settings)
 
-    time = datetime.utcnow().strftime("%I:%M %p")
+    current_time = now()
 
-    return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
+    return render_template("student.html", schoolname=schoolname, current_time=current_time, settings=settings)
 
 # student panel signout or in backend
 @signout.route("/panel/student/handler", methods=["POST"])
