@@ -11,8 +11,7 @@ import setup
 signout = Blueprint("signout", __name__)
 
 KEY_POSS = "abcdefghijklmnopqrstuvwxyz1234567890"
-ALLOWED_USERNAME = KEY_POSS + "_-"
-ALLOWED_EMAIL = ALLOWED_USERNAME + "!#$%&'*+/=?^`{}~@."
+ALLOWED_EMAIL = KEY_POSS + "_-!#$%&'*+/=?^`{}~@."
 
 DEFAULT_SETTINGS = {
     "locations": {
@@ -153,17 +152,14 @@ def before_request():
 @signout.route("/home")
 def home():
     if not check_user():
-        user = g.cur.execute(
-            "SELECT username, schoolname FROM users WHERE id = ?",
+        schoolname = g.cur.execute(
+            "SELECT schoolname FROM users WHERE id = ?",
             (session["user_id"],)
-        ).fetchone()
-
-        username = user[0]
-        schoolname = user[1]
+        ).fetchone()[0]
     else:
-        username = schoolname = None
+        schoolname = None
 
-    return render_template("home.html", schoolname=schoolname, username=username)
+    return render_template("home.html", schoolname=schoolname)
 
 # register view
 @signout.route("/register")
@@ -175,11 +171,10 @@ def register():
 def register_handler():
     email = request.form.get("email").lower()
     schoolname = request.form.get("schoolname")
-    username = request.form.get("username").lower()
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
-    if not (email and schoolname and username and password and confirm_password):
+    if not (email and schoolname and password and confirm_password):
         flash("You must fill out all fields", "neg")
         return redirect(url_for("signout.register"))
     
@@ -191,10 +186,6 @@ def register_handler():
         flash("School name must be between 3 and 64 characters", "neg")
         return redirect(url_for("signout.register"))
     
-    if not 3 <= len(username) <= 16:
-        flash("Username must be between 3 and 16 characters", "neg")
-        return redirect(url_for("signout.register"))
-    
     if not 8 <= len(password) <= 64:
         flash("Password must be between 8 and 64 characters", "neg")
         return redirect(url_for("signout.register"))
@@ -202,11 +193,6 @@ def register_handler():
     for char in email:
         if char not in ALLOWED_EMAIL:
             flash("Email contains invalid characters", "neg")
-            return redirect(url_for("signout.register"))
-
-    for char in username:
-        if char not in ALLOWED_USERNAME:
-            flash("Username can only be a-z, 0-9, - and _,", "neg")
             return redirect(url_for("signout.register"))
 
     if confirm_password != password:
@@ -218,16 +204,16 @@ def register_handler():
 
         try:
             g.cur.execute(
-                "INSERT INTO users (email, schoolname, username, password_hash, config) VALUES (?, ?, ?, ?, ?)",
-                (email, schoolname, username, generate_password_hash(password), start_config)
+                "INSERT INTO users (email, schoolname, password_hash, config) VALUES (?, ?, ?, ?)",
+                (email, schoolname, generate_password_hash(password), start_config)
             )
 
         except sqlite3.IntegrityError:
-            flash("An account with that username, school name, or email already exists.", "neg")
+            flash("An account with that school name or email already exists.", "neg")
             return redirect(url_for("signout.register"))
 
         else:
-            flash(f"Account {username} successfully created. You can now login.", "pos")
+            flash(f"Account {schoolname} successfully created. You can now login.", "pos")
             return redirect(url_for("signout.login"))
 
 # login view
@@ -238,13 +224,11 @@ def login():
 # login backend
 @signout.route("/login/handler", methods=["POST"])
 def login_handler():
-    identifier = request.form.get("identifier").lower()
+    email = request.form.get("email").lower()
     password = request.form.get("password")
 
-    ident_type = "email" if "@" in identifier else "username"
-
     user = g.cur.execute(
-        f"SELECT id, password_hash, username, config FROM users WHERE {ident_type} = ?", (identifier,)
+        f"SELECT id, password_hash, schoolname, config FROM users WHERE email = ?", (email,)
     ).fetchone()
 
     if user:
@@ -290,12 +274,12 @@ def settings():
     if error := check_user(onboard=True): return user_error(error)
 
     user = g.cur.execute(
-        "SELECT username, schoolname, config FROM users WHERE id = ?",
+        "SELECT schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
-    user_settings = json.loads(user[2])
+    user_settings = json.loads(user[1])
 
-    return render_template("settings.html", username=user[0], schoolname=user[1], settings=user_settings, current_time=now())
+    return render_template("settings.html", schoolname=user[0], settings=user_settings)
 
 # apply settings backend
 @signout.route("/settings/handler", methods=["POST"])
@@ -402,10 +386,10 @@ def monitor():
     if error := check_user(): return user_error(error)
 
     user = g.cur.execute(
-        "SELECT username, schoolname, config FROM users WHERE id = ?",
+        "SELECT schoolname, config FROM users WHERE id = ?",
         (session["user_id"],)
     ).fetchone()
-    settings = json.loads(user[2])
+    settings = json.loads(user[1])
 
     try:
         signouts = g.cur.execute(
@@ -429,8 +413,7 @@ def monitor():
                 curr.append(signout)
 
     return render_template("monitor.html", 
-        username=user[0], 
-        schoolname=user[1], 
+        schoolname=user[0], 
         settings=settings, 
         time=now(), 
         current_signouts=curr, 
@@ -490,7 +473,7 @@ def student():
     settings = user[1]
     settings = json.loads(settings)
 
-    time = datetime.utcnow().strftime("%-I:%M %p")
+    time = datetime.utcnow().strftime("%I:%M %p")
 
     return render_template("student.html", schoolname=schoolname, time=time, settings=settings)
 
@@ -673,14 +656,14 @@ def remote_link(key):
         if settings["remote_on"]:
             return render_template("student.html", 
                 schoolname=user[0], 
-                time=datetime.utcnow().strftime("%-I:%M %p"), 
+                time=datetime.utcnow().strftime("%I:%M %p"), 
                 settings=settings, 
                 remote_key=key
             )
     
     return "The link you followed was invalid!"
 
-# wip username/email/etc taken checker
+# wip emai/schoolname taken checker
 @signout.route("/check")
 def check_available():
     field = request.args.get("field")
@@ -689,7 +672,7 @@ def check_available():
     if not (field or value):
         return "not enough arguments"
     
-    if field not in ["email", "schoolname", "username"]:
+    if field not in ["email", "schoolname"]:
         return "invalid field"
 
     result = g.cur.execute(

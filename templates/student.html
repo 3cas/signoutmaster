@@ -27,12 +27,9 @@
         {% endif %}#}
         <p>
             <b>{{ schoolname }}</b>
-            {% if remote_key %}
-                <span>(remote access)</span>
-            {% endif %}
         </p>
         {% if not session["student_lock"] and not remote_key %}
-            <p>This session is not locked <a href="{{ url_for('signout.student_lock') }}"><button>&#128274; Lock</button></a></p>
+            <p>This session is not locked <a href="{{ url_for('signout.student_lock') }}"><button>&#128274; Lock</button></a> {{ info("notlocked") }}</p>
         {% endif %}
     </div>
     
@@ -44,7 +41,7 @@
             <table>
                 <tr>
                     <td><label for="id">ID:</label></td>
-                    <td><input type="text" id="student-id" name="id" minlength="{{ settings['id_min'] }}" maxlength="{{ settings['id_max'] }}" required autofocus></td>
+                    <td><input type="text" class="student-id" id="student-id" name="id" minlength="{{ settings['id_min'] }}" maxlength="{{ settings['id_max'] }}" required autofocus></td>
                 </tr>
                 <tr>
                     <td><label for="destination">Destination:</label></td>

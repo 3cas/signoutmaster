@@ -1,8 +1,11 @@
-const ALLOWED_USERNAME = "abcdefghijklmnopqrstuvwxyz1234567890_-"
 const ALLOWED_EMAIL = "abcdefghijklmnopqrstuvwxyz1234567890!#$%&'*+-/=?^_`{|}~@."
 
 const tooltips = {
     "test": "Hello world!",
+    "notlocked": "This button locks the signout panel to only this screen, so that students cannot view the monitor page or change settings on this device. When locked, this device can be used as a signout panel in the classroom. To unlock the panel, the password must be re-entered.",
+    "allowother": "This option controls whether you want to display the 'other' option on the student signout screen. This option allows students to enter anything as their reason for leaving class.",
+    "allowdismiss": "This option controls whether or not students can sign out for the day. This would be useful for going to the nurse and going home, although it is an optional feature.",
+    
 }
 
 var flashes = []
@@ -41,10 +44,8 @@ function fadeFlashes() {
 
 function checkFields() {
     let feedback_email = document.getElementById("feedback-email")
-    let feedback_username = document.getElementById("feedback-username")
     let feedback_password_confirm = document.getElementById("feedback-password-confirm")
     let email = document.getElementById("email").value
-    let username = document.getElementById("username").value
     let password = document.getElementById("password").value
     let password_confirm = document.getElementById("password-confirm").value
     let submit = document.getElementById("submit")
@@ -74,21 +75,6 @@ function checkFields() {
         feedback_email.innerHTML = ""
     }
 
-    let fail_username = false
-    for (let char_ind in username) {
-        char = username[char_ind].toLowerCase()
-        if (!ALLOWED_USERNAME.includes(char)) {
-            fail_username = true
-        }
-    }
-
-    if (fail_username) {
-        feedback_username.innerHTML = "invalid character(s)"
-        feedback_username.classList = "neg"
-    } else {
-        feedback_username.innerHTML = ""
-    }
-
     let fail_password = false
     if (password == password_confirm && password != "") {
         feedback_password_confirm.innerHTML = "good to go!"
@@ -100,7 +86,7 @@ function checkFields() {
         fail_password = true
     }
 
-    if (fail_email || fail_username || fail_password) {
+    if (fail_email || fail_password) {
         submit.disabled = true
     } else {
         submit.disabled = false

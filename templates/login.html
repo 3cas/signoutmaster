@@ -12,7 +12,7 @@
         <h2>Login</h2>
         <p>Log in to your administrator account to manage your school's signout panels.</p>
         <form method="post" action="{{ url_for('signout.login_handler') }}">
-            <input type="text" name="identifier" placeholder="username/email" required>
+            <input type="text" name="email" placeholder="email" required>
             <br>
             <input type="password" name="password" placeholder="password" required>
             <br>
