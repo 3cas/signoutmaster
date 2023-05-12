@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime, timedelta
 import sqlite3
-from datetime import datetime
 import json
 import random
 
@@ -34,6 +34,8 @@ DEFAULT_SETTINGS = {
     "accent_color": "6495ed",
     "accent_everywhere": False,
     "logo_url": None,
+    "timezone": 0,
+    "dst": False,
 }
 
 # NOTE: onboard is no longer an onboarding variable for new empty configs, instead, 
@@ -88,6 +90,9 @@ def check_user(*, student: bool = False, onboard: bool = False):
         else:
             session["onboard"] = False
 
+        if "timezone" in settings and not isinstance(settings["timezone"], int):
+            settings["timezone"] = 0
+
     # deny access to those who need settings ('onboard')
     if (not onboard) and session["onboard"]:
         return ONBOARD_NEEDED
@@ -115,6 +120,27 @@ def truth(value: str):
         return False
     else:
         return "error"
+    
+# helper function (jinja filter) to convert UTC timestamps to formatted local times
+@signout.app_template_filter("time")
+def time(timestamp, template = "%m/%d/%y(%a)%H:%M:%S"):
+    current_time = datetime.fromtimestamp(timestamp)
+
+    if not check_user():
+        config = g.cur.execute(
+            "SELECT config FROM users WHERE id = ?",
+            (session["user_id"],)
+        ).fetchone()[0]
+
+        settings = json.loads(config)
+        if "timezone" in settings:
+            difference = int(settings["timezone"])
+            current_time = current_time + timedelta(hours=difference)
+
+        if "dst" in settings and settings["dst"]:
+            current_time = current_time + timedelta(hours=1)
+
+    return current_time.strftime(template)
 
 # connect to database before every request
 @signout.before_request
@@ -269,7 +295,7 @@ def settings():
     ).fetchone()
     user_settings = json.loads(user[2])
 
-    return render_template("settings.html", username=user[0], schoolname=user[1], settings=user_settings)
+    return render_template("settings.html", username=user[0], schoolname=user[1], settings=user_settings, current_time=now())
 
 # apply settings backend
 @signout.route("/settings/handler", methods=["POST"])

@@ -21,6 +21,7 @@
     <h1>Monitor Students</h1>
     {{ get_flashes() }}
     <h2>Currently signed out</h2>
+    {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
     {% if current_signouts %}
         <table class="bordered">
             <tr>
@@ -42,9 +43,15 @@
                 <tr>
                     <td>{{ signout[2] }}</td>
                     <td>{{ signout[3] }}</td>
-                    <td>{{ signout[4]|time(settings["time_format"]) }}</td>
+                    {% set time_since = time_diff(time - signout[4]) %}
+                    {% if ((time-signout[4])/60)|int > 1440 %}
+                        {% set format = combo_format %}
+                    {% else %}
+                        {% set format = settings["time_format"] %}
+                    {% endif %}
+                    <td>{{ signout[4]|time(format) }}</td>
                     <td style="color: {{ color }};">
-                        {{ time_diff(time-signout[4]) }}
+                        {{ time_since }}
                     </td>
                     <td>
                         {% if flagged %}
@@ -87,7 +94,6 @@
                 <tr>
                     <td>{{ signout[2] }}</td>
                     <td>{{ signout[3] }}</td>
-                    {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
                     <td>{{ signout[4]|time(combo_format) }}</td>
                     <td>
                         {% if signout[5] == -1 %}
