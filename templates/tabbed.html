@@ -35,6 +35,7 @@
                     <span>Logged in as <b>{{ schoolname }}</b></span>
                 {% endif %}
             </div>
+            {{ get_flashes() }}
             <div class="topnav">
                 {% block navbar %}
                     {{ nav("") }}

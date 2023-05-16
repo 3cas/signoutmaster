@@ -62,7 +62,7 @@ function checkFields() {
         email.indexOf("@") > email.lastIndexOf(".") - 2 ||  // last . appears before @ or missing .
         email.indexOf("@") == -1 ||     // missing @
         email[0] == "@" ||              // @ is first character
-        email.slice(-1) == "." ||       // . is first character 
+        email.slice(-1) == "." ||       // . is last character 
         email.split("@").length > 2     // more than one @
     ) {
         fail_email = "invalid format"

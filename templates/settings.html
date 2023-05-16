@@ -8,7 +8,7 @@
 
 {% block content %}
     <h1>Settings</h1>
-    {{ get_flashes() }}
+    {# {{ get_flashes() }} #}
     {% set sub = url_for('signout.apply_settings') %}
     <hr>
     <h2 id="destinations">Edit Destinations</h2>
@@ -217,7 +217,7 @@
         <input type="submit" value="Set">
     </form>
 
-    <h3>Change login email or password</h3>
+    <h3>Change email or password</h3>
     <form method="post" action="{{ sub }}">
         <label for="new-email">Email:</label>
         <input type="text" name="new-email" value="{{ email }}">

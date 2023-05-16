@@ -99,6 +99,10 @@ td {
     width: fit-content;
 }
 
+/* #flashes {
+    height: 47px;
+} */
+
 .neg {
     border-color: red;
     background-color: pink;

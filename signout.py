@@ -119,6 +119,13 @@ def truth(value: str):
         return False
     else:
         return "error"
+    
+def last_index_of_char(text: str, query: str):
+    last_index = None
+    for i in range(len(text)):
+        if text[i] == query:
+            last_index = i
+    return last_index
 
 def validate_email(email: str):
     if not 6 <= len(email) <= 64:
@@ -127,6 +134,9 @@ def validate_email(email: str):
     for char in email:
         if char not in ALLOWED_EMAIL:
             return "Email contains invalid characters"
+        
+    if ("@" not in email) or ("." not in email) or (email[0] == "@") or (email[-1] == ".") or (len(email.split("@")) > 2) or (email.index("@") > last_index_of_char(email, ".") - 2):
+        return "Email is formatted wrongly"
 
 def validate_password(password: str):
     if not 8 <= len(password) <= 64:
@@ -336,6 +346,8 @@ def apply_settings():
     new_password = request.form.get("new-password")
     new_email = request.form.get("new-email")
 
+    flashed = False
+
     # apply settings
 
     if remove_location:
@@ -346,11 +358,13 @@ def apply_settings():
             add_time = int(add_location_time)
         except ValueError:
             flash("You must supply integer times", "neg")
+            flashed = True
         else:
             if add_time > 0:
                 user_settings["locations"][add_location] = add_time
             else:
                 flash("You must supply positive times", "neg")
+                flashed = True
 
     if set_other: user_settings["allow_other"] = truth(set_other)
     if set_leave: user_settings["allow_leave"] = truth(set_leave)
@@ -377,6 +391,7 @@ def apply_settings():
             int(accent_color, 16)
         except ValueError:
             flash("Color provided is not hexidecimal", "neg")
+            flashed = True
         else:
             user_settings["accent_color"] = accent_color
 
@@ -397,7 +412,8 @@ def apply_settings():
                 (new_schoolname, session["user_id"])
             )
         except:
-            flash("Something unexpected went wrong changing school name.", "neg")
+            flash("A school with that name already exists.", "neg")
+            flashed = True
 
     if new_password or new_email:
         if current_password:
@@ -410,6 +426,7 @@ def apply_settings():
                 if new_password:
                     if p_err := validate_password(new_password):
                         flash("Error changing password: "+p_err, "neg")
+                        flashed = True
                     else:
                         try:
                             g.cur.execute(
@@ -418,11 +435,14 @@ def apply_settings():
                             )
                         except:
                             flash("Something unexpected went wrong changing password.", "neg")
+                            flashed = True
                         else:
                             flash("Your password has been changed!", "pos")
+                            flashed = True
                 if new_email:
                     if e_err := validate_email(new_email):
                         flash("Error changing email: "+e_err, "neg")
+                        flashed = True
                     else:
                         try:
                             g.cur.execute(
@@ -430,14 +450,18 @@ def apply_settings():
                                 (new_email, session["user_id"])
                             )
                         except:
-                            flash("Something unexpected went wrong changing email.", "neg")
+                            flash("A user with that email already exists.", "neg")
+                            flashed = True
                         else:
                             flash(f"Your email has been changed to {new_email}!", "pos")
+                            flashed = True
             else:
                 flash("Wrong password for changing important settings!", "neg")
+                flashed = True
 
         else:
             flash("Your current password is required to change password or email!", "neg")
+            flashed = True
 
     # set autoscroll anchor based on which settings were changed
     anchor = None
@@ -457,7 +481,8 @@ def apply_settings():
         (user_settings, session["user_id"])
     )
 
-    flash("Applied changes!", "pos")
+    if not flashed:
+        flash("Applied changes!", "pos")
     return redirect(url_for("signout.settings", _anchor=anchor))
 
 # monitor student signouts

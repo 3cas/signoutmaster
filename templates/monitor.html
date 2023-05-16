@@ -19,7 +19,7 @@
 
 {% block content %}
     <h1>Monitor Students</h1>
-    {{ get_flashes() }}
+    {# {{ get_flashes() }} #}
     <h2>Currently signed out</h2>
     {% set combo_format = settings["date_format"] + " " + settings["time_format"] %}
     {% if current_signouts %}
