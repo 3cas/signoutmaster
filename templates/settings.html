@@ -76,14 +76,14 @@
             <form method="post" action="{{ sub }}">
                 <input type="text" name="set-leave" value="{{ submit }}" hidden>
                 <td><input class="{{ class }}" type="submit" value="{{ value }}"></td>
-            </form>
+            </form>``
             <td>{{ info("allowdismiss") }}</td>
         </tr>
     </table>
 
     <hr>
     <h2 id="remote">Remote Access Link</h2>
-    <p>This feature allows you to generate a randomized secure link which allows access to the student signout panel without signing in on that device.</p>  
+    <p>This feature allows you to generate a randomized secure link which allows access to the student signout panel without signing in on that device. Please note that anyone with the link can use the student panel.</p>  
     {% if settings["remote_on"] %}
         <div class="align">
             <span>Status:</span>
