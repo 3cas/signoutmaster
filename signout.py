@@ -1,14 +1,35 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, g
+from flask import render_template, request, redirect, url_for, session, flash, g
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
 import sqlite3
 import json
 import random
+import os
 
 import tools
-import setup
 
-signout = Blueprint("signout", __name__)
+def setup_func():
+    if not os.path.isdir("instance"):
+        os.mkdir("instance")
+        print("Instance directory was created")
+
+    if not os.path.isfile("instance/signout.db"):
+        with open("signout.sql", "r") as f:
+            init_script = f.read()
+
+        con = sqlite3.connect("instance/signout.db")
+        cur = con.cursor()
+
+        cur.executescript(init_script)
+        cur.execute(
+            "INSERT INTO users (email, schoolname, password_hash) VALUES (?, ?, ?)",
+            ("admin", "test school", generate_password_hash("admin"))
+        )
+
+        con.commit()
+        con.close()
+
+signout = tools.MyBlueprint("signout", host="signout.act25.com", setup=setup_func) # do not use tools-provided db handling!
 
 KEY_POSS = "abcdefghijklmnopqrstuvwxyz1234567890"
 ALLOWED_EMAIL = KEY_POSS + "_-!#$%&'*+/=?^`{}~@."
