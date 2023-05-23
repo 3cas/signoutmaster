@@ -54,7 +54,7 @@ DEFAULT_SETTINGS = {
     "accent_color": "6495ed",
     "accent_everywhere": False,
     "logo_url": None,
-    "timezone": 0,
+    "timezone": -4,
     "dst": False,
 }
 
