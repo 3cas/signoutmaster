@@ -166,10 +166,7 @@
                 {% endif %}
                 {% set offset_pad = (offset|string).rjust(2, "0") %}
                 {% set adjusted = current_time|time("%-I:%M %p", offset) %}
-                {{ settings["timezone"]|print }}
-                {{ offset|print }}
                 {% if settings["timezone"] == offset %}
-                    {{ "YUP!"|print }}
                     <option value="{{ offset }}" selected>
                 {% else %}
                     <option value="{{ offset }}">
