@@ -789,7 +789,7 @@ def remote_link(key):
     
     return "The link you followed was invalid!"
 
-# wip emai/schoolname taken checker
+# wip email/schoolname taken checker
 @signout.route("/check")
 def check_available():
     field = request.args.get("field")
